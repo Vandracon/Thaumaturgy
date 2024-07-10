@@ -1,3 +1,7 @@
+## Custom Additions
+*.db
+##
+
 ### Node ###
 # Logs
 logs

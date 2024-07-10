@@ -1,5 +1,7 @@
 import express, { Application } from "express";
 import { RootRouter } from "./routes/RootRouter";
+import { ErrorHandlingMiddleware } from "./middleware/ErrorHandlingMiddleware";
+import { OpenAIProtocolRouter } from "./routes/OpenAIProtocolRouter";
 
 class Server {
   private app: Application;
@@ -9,7 +11,14 @@ class Server {
     this.app = express();
     this.port = port;
 
+    // Middleware
+    ErrorHandlingMiddleware.SystemErrorHandle();
+    ErrorHandlingMiddleware.ExpressErrorHandle(this.app);
+    this.app.use(express.json());
+
+    // Routes
     new RootRouter(this.app);
+    new OpenAIProtocolRouter(this.app);
 
     this.start();
   }
@@ -21,7 +30,6 @@ class Server {
   }
 }
 
-// The port the express app will listen on
 const port: number = 8050;
 
 // Start the server

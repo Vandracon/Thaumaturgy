@@ -1,0 +1,5 @@
+{
+  "MEMGPT_ENDPOINT": "http://localhost:8283/api",
+  "MEMGPT_TOKEN": "avXIIoLq1FIoE3kpu4dHLA",
+  "LLM_ENDPOINT": "http://localhost:8069/v1/chat/completions"
+}

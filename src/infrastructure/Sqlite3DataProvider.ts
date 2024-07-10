@@ -1,0 +1,100 @@
+import sqlite3, { Database, RunResult } from "sqlite3";
+
+export class Sqlite3DataProvider {
+  private db: Database;
+  private debugDB: Database;
+
+  constructor() {
+    this.db = new sqlite3.Database(process.cwd() + "/thaumaturgy.db", (err) => {
+      if (err) {
+        return console.error(err.message);
+      }
+      console.log("Connected to SQlite database.");
+    });
+
+    this.debugDB = new sqlite3.Database(
+      process.cwd() + "/thaumaturgydebug.db",
+      (err) => {
+        if (err) {
+          return console.error(err.message);
+        }
+        console.log("Connected to debug SQlite database.");
+      },
+    );
+  }
+
+  createTable(sql: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.run(sql, (err) => {
+        if (err) {
+          console.error(err.message);
+          reject();
+        }
+        console.log("Table created.");
+        resolve();
+      });
+    });
+  }
+
+  createDebugTable(sql: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.debugDB.run(sql, (err) => {
+        if (err) {
+          console.error(err.message);
+          reject();
+        }
+        console.log("Table created.");
+        resolve();
+      });
+    });
+  }
+
+  insertData(sql: string, values: any[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.run(sql, values, function (this: RunResult, err) {
+        if (err) {
+          console.error(err.message);
+          reject();
+        }
+        console.log(`A row has been inserted with rowid ${this.lastID}`);
+        resolve();
+      });
+    });
+  }
+
+  insertDebugData(sql: string, values: any[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.debugDB.run(sql, values, function (this: RunResult, err) {
+        if (err) {
+          console.error(err.message);
+          reject();
+        }
+        console.log(`A row has been inserted with rowid ${this.lastID}`);
+        resolve();
+      });
+    });
+  }
+
+  selectData(sql: string, fields: any[]): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      this.db.all(sql, fields, (err, rows) => {
+        if (err) {
+          throw err;
+        }
+        rows.forEach((row) => {
+          console.log(row.message);
+        });
+        resolve(rows);
+      });
+    });
+  }
+
+  closeDb(): void {
+    this.db.close((err) => {
+      if (err) {
+        return console.error(err.message);
+      }
+      console.log("Close the database connection.");
+    });
+  }
+}

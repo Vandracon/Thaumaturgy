@@ -27,6 +27,9 @@
     "typescript-eslint": "^7.16.0"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "axios": "^1.7.2",
+    "config": "^3.3.12",
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
   }
 }
