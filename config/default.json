@@ -1,5 +1,34 @@
 {
-  "MEMGPT_ENDPOINT": "http://localhost:8283/api",
-  "MEMGPT_TOKEN": "avXIIoLq1FIoE3kpu4dHLA",
-  "LLM_ENDPOINT": "http://localhost:8069/v1/chat/completions"
+  "MEMGPT": {
+    "BASE_URL": "http://localhost:8283",
+    "AUTH_TOKEN": "dfW5t2JVYrqvRI3oM5fpDw",
+    "ENDPOINTS": {
+      "AUTH": "/api/auth",
+      "PERSONAS": "/api/personas",
+      "AGENTS": "/api/agents",
+      "HUMANS": "/api/humans",
+      "PRESETS": "/api/presets"
+    },
+    "FUNCTIONS_SCHEMA": [
+      { "name": "archival_memory_insert" },
+      { "name": "archival_memory_search" },
+      { "name": "conversation_search" },
+      { "name": "conversation_search_date" },
+      { "name": "core_memory_append" },
+      { "name": "core_memory_replace" },
+      { "name": "pause_heartbeats" },
+      { "name": "send_message" }
+    ]
+  },
+
+  "LLM": {
+    "ENDPOINT": "http://localhost:8069/v1/chat/completions"
+  },
+
+  "IMPORTER": {
+    "FILE_PROCESSED_PERSONAS": "processed_personas.json",
+    "FILE_USER_CREATE_RESPONSE": "user_create_response.json",
+    "FILE_CREATE_PRESET_RESPONSE": "create_preset_response.json",
+    "MAX_TRIES_BIO_SUMMARY": 10
+  }
 }

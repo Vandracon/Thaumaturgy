@@ -1,7 +1,7 @@
 import { Response } from "express";
-import { LLMChatCompletionResponse } from "../core/data/open_ai_protocol/LLMChatCompletionResponse";
-import { Message } from "../core/data/open_ai_protocol/LLMChatCompletionRequestBody";
-import { Utility } from "../core/utils/Utility";
+import { LLMChatCompletionResponse } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
+import { Message } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
+import { Utility } from "../../Core/Utils/Utility";
 
 export class OpenAIProtocolTransport {
   static async streamToClient(res: Response, reply: LLMChatCompletionResponse) {

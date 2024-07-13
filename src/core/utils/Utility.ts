@@ -1,4 +1,4 @@
-import { Message } from "../data/open_ai_protocol/LLMChatCompletionRequestBody";
+import { Message } from "../Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 
 export class Utility {
   public static generateChatChunkId() {

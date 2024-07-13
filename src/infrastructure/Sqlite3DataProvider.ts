@@ -1,6 +1,7 @@
 import sqlite3, { Database, RunResult } from "sqlite3";
+import { IDatabaseClient } from "../Core/Interfaces/IDatabaseClient";
 
-export class Sqlite3DataProvider {
+export class Sqlite3DataProvider implements IDatabaseClient {
   private db: Database;
   private debugDB: Database;
 
@@ -81,7 +82,7 @@ export class Sqlite3DataProvider {
         if (err) {
           throw err;
         }
-        rows.forEach((row) => {
+        rows.forEach((row: any) => {
           console.log(row.message);
         });
         resolve(rows);

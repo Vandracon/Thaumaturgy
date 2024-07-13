@@ -1,4 +1,4 @@
-import { Message } from "../../core/data/open_ai_protocol/LLMChatCompletionRequestBody";
+import { Message } from "../Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 
 export class Validator {
   public static removeEmptyContent(msg: Array<Message>): Array<Message> {

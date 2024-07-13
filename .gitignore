@@ -1,5 +1,7 @@
 ## Custom Additions
 *.db
+/data
+/tmp
 ##
 
 ### Node ###

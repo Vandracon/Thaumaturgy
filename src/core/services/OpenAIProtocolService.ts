@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { IOpenAIProtocolService } from "../interfaces/IOpenAIProtocolService";
-import { Validator } from "../validators/Validator";
-import { IOpenAIProtocolLLMProvider } from "../interfaces/IOpenAIProtocolLLMProvider";
-import { IMemGPTProvider } from "../interfaces/IMemGPTProvider";
-import { LLMChatRequestMessageBody } from "../data/open_ai_protocol/LLMChatRequestMessageBody";
-import { IDataRepository } from "../interfaces/IDataRepository";
-import { Agent } from "../entities/Agent";
+import { IOpenAIProtocolService } from "../Interfaces/IOpenAIProtocolService";
+import { IOpenAIProtocolLLMProvider } from "../Interfaces/IOpenAIProtocolLLMProvider";
+import { IMemGPTProvider } from "../Interfaces/IMemGPTProvider";
+import { IDataRepository } from "../Interfaces/IDataRepository";
+import { ThaumaturgyAgent } from "../Entities/Agent";
+import { LLMChatRequestMessageBody } from "../Data/OpenAIProtocol/LLMChatRequestMessageBody";
+import { Validator } from "../Validators/Validator";
 
 export class OpenAIProtocolService implements IOpenAIProtocolService {
   constructor(
@@ -112,9 +112,13 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
       if (data.length == 0)
         console.warn(`Could not find NPC by the name of ${msgData.name}`);
 
-      let characterData: Agent | null = null;
+      let characterData: ThaumaturgyAgent | null = null;
       if (data.length > 0) {
-        characterData = new Agent(data[0].id, data[0].name, data[0].persona);
+        characterData = new ThaumaturgyAgent(
+          data[0].id,
+          data[0].name,
+          data[0].persona,
+        );
         console.log("Found NPC data", data);
       }
 

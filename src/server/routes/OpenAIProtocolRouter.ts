@@ -1,24 +1,26 @@
 import { Application, Request, Response } from "express";
-import { OpenAIProtocolService } from "../../core/services/OpenAIProtocolService";
-import { OpenAIProtocolLLMProvider } from "../../infrastructure/OpenAIProtocolLLMProvider";
-import { MemGPTProvider } from "../../infrastructure/MemGPTProvider";
-import { DataRepository } from "../../infrastructure/DataRepository";
+import { OpenAIProtocolService } from "../../Core/Services/OpenAIProtocolService";
+import { BaseRouter } from "./BaseRouter";
+import { IOpenAIProtocolLLMProvider } from "../../Core/Interfaces/IOpenAIProtocolLLMProvider";
+import { IMemGPTProvider } from "../../Core/Interfaces/IMemGPTProvider";
+import { IDataRepository } from "../../Core/Interfaces/IDataRepository";
 
-export class OpenAIProtocolRouter {
+export class OpenAIProtocolRouter extends BaseRouter {
   private openAIProtocolService: OpenAIProtocolService;
 
-  constructor(private app: Application) {
+  constructor(
+    private app: Application,
+    private openAIProtocolLLMProvider: IOpenAIProtocolLLMProvider,
+    private memGPTProvider: IMemGPTProvider,
+    private dataRepository: IDataRepository,
+  ) {
+    super();
     this.setupRoutes();
 
-    // Bootstrapper
-    let openAIProtocolLLMProvider = new OpenAIProtocolLLMProvider();
-    let memGPTProvider = new MemGPTProvider();
-    let dataRepository = new DataRepository();
-
     this.openAIProtocolService = new OpenAIProtocolService(
-      openAIProtocolLLMProvider,
-      memGPTProvider,
-      dataRepository,
+      this.openAIProtocolLLMProvider,
+      this.memGPTProvider,
+      this.dataRepository,
     );
   }
 

@@ -1,7 +1,12 @@
 import express, { Application } from "express";
-import { RootRouter } from "./routes/RootRouter";
+import { OpenAIProtocolLLMProvider } from "../Infrastructure/OpenAIProtocol/OpenAIProtocolLLMProvider";
+import { DataRepository } from "../Infrastructure/DataRepository";
 import { ErrorHandlingMiddleware } from "./middleware/ErrorHandlingMiddleware";
+import { MemGPTProvider } from "../Infrastructure/MemGPT/MemGPTProvider";
+import { RootRouter } from "./routes/RootRouter";
 import { OpenAIProtocolRouter } from "./routes/OpenAIProtocolRouter";
+import { DataImportRouter } from "./routes/DataImportRouter";
+import { Sqlite3DataProvider } from "../Infrastructure/Sqlite3DataProvider";
 
 class Server {
   private app: Application;
@@ -16,9 +21,26 @@ class Server {
     ErrorHandlingMiddleware.ExpressErrorHandle(this.app);
     this.app.use(express.json());
 
+    // Bootstrapper
+    let dbClient = new Sqlite3DataProvider();
+    let openAIProtocolLLMProvider = new OpenAIProtocolLLMProvider();
+    let dataRepository = new DataRepository(dbClient);
+    let memGPTProvider = new MemGPTProvider(); // todo: don't do direct client calls like this..
+
     // Routes
     new RootRouter(this.app);
-    new OpenAIProtocolRouter(this.app);
+    new OpenAIProtocolRouter(
+      this.app,
+      openAIProtocolLLMProvider,
+      memGPTProvider,
+      dataRepository,
+    );
+    new DataImportRouter(
+      this.app,
+      openAIProtocolLLMProvider,
+      memGPTProvider,
+      dataRepository,
+    );
 
     this.start();
   }
