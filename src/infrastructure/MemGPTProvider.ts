@@ -2,21 +2,23 @@ import axios from "axios";
 import { Response } from "express";
 import * as config from "config";
 import fs from "fs";
-import { IMemGPTProvider } from "../../Core/Interfaces/IMemGPTProvider";
-import { ProcessedBio } from "../../Core/Data/Importer/ProcessedBio";
-import { Utility } from "../../Core/Utils/Utility";
+import { IMemGPTProvider } from "../Core/Interfaces/IMemGPTProvider";
+import { LLMChatRequestMessageBody } from "../Core/Data/OpenAIProtocol/LLMChatRequestMessageBody";
+import { ProcessedBio } from "../Core/Data/Importer/ProcessedBio";
 import {
-  FunctionCallMessage,
   MemGPTChatResponse,
-} from "../../Core/Data/MemGPT/MemGPTChatResponse";
-import { LLMChatRequestMessageBody } from "../../Core/Data/OpenAIProtocol/LLMChatRequestMessageBody";
-import { OpenAIProtocolTransport } from "../OpenAIProtocol/OpenAIProtocolTransport";
-import { LLMChatCompletionResponse } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
-import { Preset } from "../../Core/Entities/Preset";
-import { Agent } from "../../Core/Entities/Agent";
+  FunctionCallMessage,
+} from "../Core/Data/MemGPT/MemGPTChatResponse";
+import { LLMChatCompletionResponse } from "../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
+import { Preset } from "../Core/Entities/Preset";
+import { Utility } from "../Core/Utils/Utility";
+import { OpenAIProtocolTransport } from "./OpenAIProtocol/OpenAIProtocolTransport";
+import { Agent } from "../Core/Entities/Agent";
+import { IDataRepository } from "../Core/Interfaces/IDataRepository";
 
 export class MemGPTProvider implements IMemGPTProvider {
-  constructor() {}
+  constructor(private dataRepository: IDataRepository) {}
+
   async handleMessage(
     res: Response,
     hasSystemPrompt: boolean,
@@ -30,7 +32,7 @@ export class MemGPTProvider implements IMemGPTProvider {
       console.log("Sending system alert to MemGPT");
       try {
         await axios.post(
-          config.MEMGPT.BASE_URL + `/agents/${agentId}/messages`,
+          `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/messages`,
           systemMessageBody,
           {
             headers: {
@@ -53,7 +55,7 @@ export class MemGPTProvider implements IMemGPTProvider {
     let response;
     try {
       response = await axios.post(
-        config.MEMGPT.BASE_URL + `/agents/${agentId}/messages`,
+        `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/messages`,
         userMessageBody,
         {
           headers: {
@@ -119,6 +121,11 @@ export class MemGPTProvider implements IMemGPTProvider {
     } catch (e) {
       console.error("Error processing response from MemGPT", e);
       throw e;
+    }
+
+    // store response
+    if (jsonObj.messages && jsonObj.messages.length) {
+      this.dataRepository.storeMemGPTResponse(jsonObj.messages);
     }
 
     // AI decided not to respond with more dialog.

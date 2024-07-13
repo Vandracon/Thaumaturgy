@@ -10,4 +10,6 @@ export interface IDataRepository {
   saveCreatedAgentsAnalytics(createdAgentResponses: Array<any>): Promise<void>;
 
   saveCreatedAgentsToDatabase(agents: Array<ThaumaturgyAgent>): Promise<void>;
+
+  storeMemGPTResponse(data: Array<any>): Promise<void>;
 }

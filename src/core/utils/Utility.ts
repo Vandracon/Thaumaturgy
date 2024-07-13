@@ -13,12 +13,11 @@ export class Utility {
 
   public static randomAcknowledgement() {
     const acknowledgements = [
-      "Right, I've received your message, and I have no response.",
-      "Okay, I've noted your message and have no response.",
-      "Uh-huh, your message is acknowledged, I have no response.",
-      "Sure, I've seen your message, I have no response at this time.",
-      "I understand, your message has been noted, I have no response.",
-      "Interesting, your message has been received, thank you. I have no response at this time.",
+      "Right",
+      "Okay",
+      "Uh-huh",
+      "I understand",
+      "Interesting",
     ];
 
     const randomIndex = Math.floor(Math.random() * acknowledgements.length);

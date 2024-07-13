@@ -69,4 +69,42 @@ export class DataRepository implements IDataRepository {
 
     await this.dbClient.insertData(sql, values);
   }
+
+  async storeMemGPTResponse(data: Array<any>): Promise<void> {
+    await this.dbClient.createTable(
+      "CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT, message_id INTEGER, json TEXT)",
+    );
+
+    let lastMessageIdQueryResponse = await this.dbClient.selectData(
+      `SELECT MAX(message_id) AS lastMsgId FROM messages;`,
+      [],
+    );
+
+    let message_id = 1;
+    if (lastMessageIdQueryResponse.length) {
+      let lastMsgId = Number.parseInt(lastMessageIdQueryResponse[0].lastMsgId);
+      if (!isNaN(lastMsgId)) {
+        lastMsgId++;
+        message_id = lastMsgId;
+      }
+    }
+
+    let insert: any = [];
+    for (let msg of data) {
+      insert.push({
+        message_id: message_id,
+        json: JSON.stringify(msg),
+      });
+    }
+
+    const placeholders = insert.map(() => "(?, ?)").join(", ");
+    const values = insert.reduce(
+      (acc: any, cur: any) => [...acc, cur.message_id, cur.json],
+      [],
+    );
+
+    const sql = `INSERT INTO messages (message_id, json) VALUES ${placeholders}`;
+
+    await this.dbClient.insertData(sql, values);
+  }
 }

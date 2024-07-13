@@ -2,11 +2,11 @@ import express, { Application } from "express";
 import { OpenAIProtocolLLMProvider } from "../Infrastructure/OpenAIProtocol/OpenAIProtocolLLMProvider";
 import { DataRepository } from "../Infrastructure/DataRepository";
 import { ErrorHandlingMiddleware } from "./middleware/ErrorHandlingMiddleware";
-import { MemGPTProvider } from "../Infrastructure/MemGPT/MemGPTProvider";
 import { RootRouter } from "./routes/RootRouter";
 import { OpenAIProtocolRouter } from "./routes/OpenAIProtocolRouter";
 import { DataImportRouter } from "./routes/DataImportRouter";
 import { Sqlite3DataProvider } from "../Infrastructure/Sqlite3DataProvider";
+import { MemGPTProvider } from "../Infrastructure/MemGPTProvider";
 
 class Server {
   private app: Application;
@@ -25,7 +25,7 @@ class Server {
     let dbClient = new Sqlite3DataProvider();
     let openAIProtocolLLMProvider = new OpenAIProtocolLLMProvider();
     let dataRepository = new DataRepository(dbClient);
-    let memGPTProvider = new MemGPTProvider(); // todo: don't do direct client calls like this..
+    let memGPTProvider = new MemGPTProvider(dataRepository);
 
     // Routes
     new RootRouter(this.app);
