@@ -1,7 +1,7 @@
 {
   "MEMGPT": {
     "BASE_URL": "http://localhost:8283",
-    "AUTH_TOKEN": "dfW5t2JVYrqvRI3oM5fpDw",
+    "AUTH_TOKEN": "j495Dxah-fqomF3FhK8iXQ",
     "ENDPOINTS": {
       "AUTH": "/api/auth",
       "PERSONAS": "/api/personas",
@@ -18,7 +18,11 @@
       { "name": "core_memory_replace" },
       { "name": "pause_heartbeats" },
       { "name": "send_message" }
-    ]
+    ],
+    "CORE_MEMORY_CHARACTER_LIMIT": 2000,
+    "MOD": {
+      "MEMGPT_SQLITE_DATABASE_PATH": ""
+    }
   },
 
   "LLM": {
@@ -29,6 +33,8 @@
     "FILE_PROCESSED_PERSONAS": "processed_personas.json",
     "FILE_USER_CREATE_RESPONSE": "user_create_response.json",
     "FILE_CREATE_PRESET_RESPONSE": "create_preset_response.json",
-    "MAX_TRIES_BIO_SUMMARY": 10
+    "FILE_SYSTEM_PROMPT": "system_prompt.txt",
+    "MAX_TRIES_BIO_SUMMARY": 50,
+    "MAX_TRIES_MEMORY_IMPORT": 50
   }
 }

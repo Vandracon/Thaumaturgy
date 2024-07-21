@@ -4,7 +4,8 @@ import { LLMChatCompletionResponse } from "../Data/OpenAIProtocol/LLMChatComplet
 export interface IOpenAIProtocolLLMProvider {
   handleMessage(res: Response, originalBody: string): Promise<void>;
   chatToLLM(
-    prompt: string,
+    systemPrompt: string | null,
+    userPrompt: string | null,
     maxTokens: number,
   ): Promise<LLMChatCompletionResponse>;
 }

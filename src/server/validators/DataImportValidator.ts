@@ -1,15 +1,9 @@
 import { ImportDomainData } from "../../Core/Data/Importer/ImportDomainData";
+import * as fs from "fs";
+import { ImportMemoriesData } from "../../Core/Data/Importer/ImportMemoriesData";
+import { BaseValidator, ValidationResult } from "./BaseValidator";
 
-// todo: move
-export class ValidationResult {
-  constructor(
-    public passed: boolean,
-    public data: any,
-  ) {}
-}
-
-// todo: do actual validation when body is figured out
-export class DataImportValidator {
+export class DataImportValidator extends BaseValidator {
   validateImportDomainData(
     file: Express.Multer.File | undefined,
     data: ImportDomainData,
@@ -39,6 +33,15 @@ export class DataImportValidator {
           : (data.use_previously_processed_bios_file = false);
     }
 
+    if (!data.use_previously_imported_personas)
+      validationReasons.push(`Missing use_previously_processed_bios_file`);
+    else {
+      data.use_previously_imported_personas =
+        (data.use_previously_imported_personas as unknown) == "true"
+          ? (data.use_previously_imported_personas = true)
+          : (data.use_previously_imported_personas = false);
+    }
+
     if (!data.create_user_template)
       validationReasons.push(`Missing create_user_template`);
     else {
@@ -53,15 +56,44 @@ export class DataImportValidator {
       validationReasons.push(`Missing player_starter_memory`);
 
     // End of checks
-
-    if (validationReasons.length) {
-      return this.returnResult(false, validationReasons);
-    }
-
-    return this.returnResult(true, validationReasons);
+    return this.returnResult(
+      validationReasons.length ? false : true,
+      validationReasons,
+    );
   }
 
-  private returnResult(passed: boolean, data: Array<string>) {
-    return new ValidationResult(passed, data);
+  validateMemoryImport(
+    file: Express.Multer.File | undefined,
+    data: ImportMemoriesData,
+  ): ValidationResult {
+    let validationReasons: Array<string> = [];
+
+    if (!file) validationReasons.push(`File not provided`);
+    else if (!fs.existsSync(file.path))
+      validationReasons.push(`Uploaded file was not found. Internal Error`);
+
+    if (!data.character_name)
+      validationReasons.push(`No character_name provided`);
+
+    data.override_summaries_generation =
+      (data.override_summaries_generation as unknown) == "true";
+
+    if (data.override_summaries_generation) {
+      if (data.core_persona_memory_override) {
+        if (data.core_persona_memory_override.length == 0)
+          validationReasons.push(`core_persona_memory_override can't be empty`);
+      }
+
+      if (data.core_human_memory_override) {
+        if (data.core_human_memory_override.length == 0)
+          validationReasons.push(`core_human_memory_override can't be empty`);
+      }
+    }
+
+    // End of checks
+    return this.returnResult(
+      validationReasons.length ? false : true,
+      validationReasons,
+    );
   }
 }

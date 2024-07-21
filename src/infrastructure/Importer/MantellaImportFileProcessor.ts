@@ -5,6 +5,7 @@ import csv from "csv-parser";
 import * as config from "config";
 import { IOpenAIProtocolLLMProvider } from "../../Core/Interfaces/IOpenAIProtocolLLMProvider";
 import { Message } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
+import { ExtractSummariesData } from "../../Core/Data/Importer/ExtractSummariesData";
 
 export class MantellaImportFileProcessor implements IDataImportFileProcessor {
   constructor(private llmProvider: IOpenAIProtocolLLMProvider) {}
@@ -15,8 +16,9 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
     file: Express.Multer.File,
     usePreviousFile: boolean,
     agentPersonaStarter: string,
+    domain: string,
   ): Promise<Array<ProcessedBio>> {
-    let cachedFilePath = `${process.cwd()}/data/${config.IMPORTER.FILE_PROCESSED_PERSONAS}`;
+    let cachedFilePath = `${process.cwd()}/data/domain/${domain}/${config.IMPORTER.FILE_PROCESSED_PERSONAS}`;
 
     this.usedPersonaNames = [];
     this.numBiosOriginallyOverLimit = 0;
@@ -91,23 +93,30 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
       }
       this.usedPersonaNames.push(name);
 
-      var bio = agentPersonaStarter;
-      bio += "\n\nRace: " + row["race"];
-      bio += "\nGender: " + row["gender"];
-      bio += "\nSpecies: " + row["species"];
-      bio += "\n\nBio: " + row["bio"];
+      var personaHeader = agentPersonaStarter;
+      personaHeader += "\n\nRace: " + row["race"];
+      personaHeader += "\nGender: " + row["gender"];
+      personaHeader += "\nSpecies: " + row["species"];
+      personaHeader += "\n\nBio: ";
 
       var data: ProcessedBio = {
         name: name,
-        text: bio,
+        persona_header: personaHeader,
+        persona: row["bio"],
       };
 
-      if (data.text.length > 2000) {
-        data.text = await this.summarizeBioUntilSatisfied(data.text);
+      let personaCharLimit = 2000 - data.persona_header.length;
+
+      if (data.persona.length > personaCharLimit) {
+        data.persona = await this.summarizeBioUntilSatisfied(
+          data.persona,
+          data.persona,
+          personaCharLimit,
+        );
       }
 
       // If it's still bad after trying so much.. we have to abort.
-      if (data.text.length > 2000) {
+      if (data.persona.length > personaCharLimit) {
         throw new Error(
           `LLM was unable to summarize bio to acceptable length after ${config.IMPORTER.MAX_TRIES_BIO_SUMMARY} tries. Aborting`,
         );
@@ -121,7 +130,8 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
 
   private async summarizeBio(bio: string) {
     const response = await this.llmProvider.chatToLLM(
-      `Summarize this character bio to be at or under 2000 character length: ${bio}`,
+      `Extract the most important information from the following text and present it in an extended summary (2 paragraphs):`,
+      `${bio}`,
       450,
     );
     var msg = response.choices[0].message as Message;
@@ -144,23 +154,48 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
 
   private async summarizeBioUntilSatisfied(
     text: string,
+    originalText: string,
+    limit: number,
     numRuns: number = 0,
   ): Promise<string> {
-    if (text.length > 2000 || text.length == 0) {
+    if (text.length > limit || text.length == 0) {
       if (numRuns == 0) this.numBiosOriginallyOverLimit++;
 
-      let summarizedText = await this.summarizeBio(text);
+      let summarizedText = await this.summarizeBio(originalText);
       numRuns++;
 
       // We can't bug the LLM forever. The model used can't seem to give us the summary we need.
       if (numRuns > config.IMPORTER.MAX_TRIES_BIO_SUMMARY) {
+        console.log(`Summary failed after ${numRuns} tries.`);
         return text;
       }
 
       // Call the function recursively with the summarized text
-      return this.summarizeBioUntilSatisfied(summarizedText, numRuns);
+      return this.summarizeBioUntilSatisfied(
+        summarizedText,
+        originalText,
+        limit,
+        numRuns,
+      );
     } else {
       return text;
     }
+  }
+
+  extractSummariesFromFile(file: Express.Multer.File): ExtractSummariesData {
+    let fileContent = fs.readFileSync(file.path, "utf8");
+    let fileData: Array<string> = fileContent.split("\n");
+    let results: Array<string> = [];
+
+    // Process text
+    for (let t of fileData) {
+      t = t.replace("\r", "");
+      if (t.length) results.push(t);
+    }
+
+    return {
+      original: fileContent,
+      summaries: results,
+    };
   }
 }

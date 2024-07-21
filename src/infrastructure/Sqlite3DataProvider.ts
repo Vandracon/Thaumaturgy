@@ -3,25 +3,27 @@ import { IDatabaseClient } from "../Core/Interfaces/IDatabaseClient";
 
 export class Sqlite3DataProvider implements IDatabaseClient {
   private db: Database;
-  private debugDB: Database;
+  private debugDB: Database | undefined;
 
-  constructor() {
-    this.db = new sqlite3.Database(process.cwd() + "/thaumaturgy.db", (err) => {
+  constructor(
+    private dbPath: string,
+    private debugDbPath: string | undefined,
+  ) {
+    this.db = new sqlite3.Database(this.dbPath, (err) => {
       if (err) {
         return console.error(err.message);
       }
-      console.log("Connected to SQlite database.");
+      console.log(`Connected to SQlite (${this.dbPath}) database.`);
     });
 
-    this.debugDB = new sqlite3.Database(
-      process.cwd() + "/thaumaturgydebug.db",
-      (err) => {
+    if (this.debugDbPath) {
+      this.debugDB = new sqlite3.Database(this.debugDbPath, (err) => {
         if (err) {
           return console.error(err.message);
         }
-        console.log("Connected to debug SQlite database.");
-      },
-    );
+        console.log(`Connected to debug SQlite (${this.dbPath}) database.`);
+      });
+    }
   }
 
   createTable(sql: string): Promise<void> {
@@ -39,6 +41,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
 
   createDebugTable(sql: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (!this.debugDB) return reject("No debug database provided");
       this.debugDB.run(sql, (err) => {
         if (err) {
           console.error(err.message);
@@ -57,7 +60,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
           console.error(err.message);
           reject();
         }
-        console.log(`A row has been inserted with rowid ${this.lastID}`);
+        console.log(`Query complete. rowid ${this.lastID}`);
         resolve();
       });
     });
@@ -65,12 +68,13 @@ export class Sqlite3DataProvider implements IDatabaseClient {
 
   insertDebugData(sql: string, values: any[]): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (!this.debugDB) return reject("No debug database provided");
       this.debugDB.run(sql, values, function (this: RunResult, err) {
         if (err) {
           console.error(err.message);
           reject();
         }
-        console.log(`A row has been inserted with rowid ${this.lastID}`);
+        console.log(`Query complete. rowid ${this.lastID}`);
         resolve();
       });
     });

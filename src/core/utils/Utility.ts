@@ -13,11 +13,11 @@ export class Utility {
 
   public static randomAcknowledgement() {
     const acknowledgements = [
-      "Right",
-      "Okay",
-      "Uh-huh",
-      "I understand",
-      "Interesting",
+      "Right, I have no more to say at the moment.",
+      "Okay, that's all I can say at the moment.",
+      "Uh-huh, I understand what you're saying.",
+      "I understand, I have nothing yet to say.",
+      "Interesting, but I have no reply yet.",
     ];
 
     const randomIndex = Math.floor(Math.random() * acknowledgements.length);

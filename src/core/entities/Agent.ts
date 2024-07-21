@@ -4,7 +4,8 @@ export class ThaumaturgyAgent {
   constructor(
     public id: string,
     public name: string,
-    public persona: string,
+    public initial_persona_header: string,
+    public initial_persona: string,
   ) {}
 }
 
@@ -17,18 +18,17 @@ export class Agent {
     public persona: string,
     public model: string,
     public functionSchemas: Array<IFunctionSchema>,
-    public preset: string,
   ) {}
 
   package(): object {
     let strFunctionNames = "";
     this.functionSchemas.forEach((schema) => {
       if (
+        // These two are automatically included with agent creation.
         schema.name == "core_memory_append" ||
         schema.name == "core_memory_replace"
       ) {
-      } // todo: figure out right usage of this
-      else {
+      } else {
         strFunctionNames += `${schema.name},`;
       }
     });
@@ -45,7 +45,6 @@ export class Agent {
       persona: this.persona,
       model: "",
       function_names: strFunctionNames,
-      preset: this.preset,
     };
   }
 }
@@ -62,4 +61,20 @@ var agentFunctionNames =
   model: null,
   function_names: agentFunctionNames,
   preset: presetName,
+*/
+
+/*
+{
+  "config": {
+    "name": "Test 2",
+    "human_name": "cs_phd",
+    "human": "This is what I know so far about the user, I should expand this as I learn more about them.\n\nFirst name: Chad\nLast name: ?\nGender: Male\nAge: ?\nNationality: ?\nOccupation: Computer science PhD student at UC Berkeley\nInterests: Formula 1, Sailing, Taste of the Himalayas Restaurant in Berkeley, CSGO\n",
+    "persona_name": "memgpt_doc",
+    "persona": "My name is MemGPT.\nI am an AI assistant designed to help human users with document analysis.\nI can use this space in my core memory to keep track of my current tasks and goals.\n\nThe answer to the human's question will usually be located somewhere in your archival memory, so keep paging through results until you find enough information to construct an answer.\nDo not respond to the human until you have arrived at an answer.\n",
+    "model": "",
+    "function_names": "archival_memory_insert,archival_memory_search,conversation_search,conversation_search_date,core_memory_append,core_memory_replace,pause_heartbeats,send_message"
+  },
+  "user_id": "00000000-0000-0000-0000-000000000000"
+}
+
 */

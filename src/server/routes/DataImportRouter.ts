@@ -34,7 +34,7 @@ export class DataImportRouter extends BaseRouter {
   private setupRoutes(): void {
     this.app.post(
       this.buildEndpoint("import"),
-      this.upload.single("file"), // use multer middleware to handle file upload, 'file' is the field name
+      this.upload.single("file"),
       async (req: Request, res: Response) => {
         try {
           let results = this.validator.validateImportDomainData(
@@ -50,6 +50,33 @@ export class DataImportRouter extends BaseRouter {
           await this.controller.importDomainData(
             req.file as Express.Multer.File,
             req.body as ImportDomainData,
+          );
+
+          res.send({ data: {} });
+        } catch (e: any) {
+          res
+            .status(HttpStatusCode.InternalServerError)
+            .send({ data: { error: e.message } });
+        }
+      },
+    );
+
+    this.app.post(
+      this.buildEndpoint("memory/import"),
+      this.upload.single("file"),
+      async (req: Request, res: Response) => {
+        try {
+          let results = this.validator.validateMemoryImport(req.file, req.body);
+
+          if (!results.passed) {
+            res.status(HttpStatusCode.BadRequest).send({ data: results.data });
+            return;
+          }
+
+          // logic
+          await this.controller.importMemories(
+            req.file as Express.Multer.File,
+            req.body,
           );
 
           res.send({ data: {} });

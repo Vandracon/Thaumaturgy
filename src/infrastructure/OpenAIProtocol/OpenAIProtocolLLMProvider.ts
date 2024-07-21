@@ -35,15 +35,21 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
   }
 
   async chatToLLM(
-    prompt: string,
+    systemPrompt: string | null,
+    userPrompt: string | null,
     maxTokens: number,
   ): Promise<LLMChatCompletionResponse> {
     const headers = {
       //'Authorization': `Bearer YOUR_OPEN_AI_KEY`,
       "Content-Type": "application/json",
     };
+    let messages = [];
+    if (systemPrompt != null)
+      messages.push({ role: "system", content: systemPrompt });
+    if (userPrompt != null)
+      messages.push({ role: "user", content: userPrompt });
     const data = {
-      messages: [{ role: "user", content: prompt }],
+      messages: messages,
       max_tokens: maxTokens,
     };
 

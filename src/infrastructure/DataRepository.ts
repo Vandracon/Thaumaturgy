@@ -47,7 +47,7 @@ export class DataRepository implements IDataRepository {
     agents: Array<ThaumaturgyAgent>,
   ): Promise<void> {
     await this.dbClient.createTable(
-      "CREATE TABLE IF NOT EXISTS agents(id TEXT PRIMARY KEY, name TEXT, persona TEXT)",
+      "CREATE TABLE IF NOT EXISTS agents(id TEXT PRIMARY KEY, name TEXT, initial_persona_header TEXT, initial_persona TEXT)",
     );
 
     let insert: any = [];
@@ -55,17 +55,24 @@ export class DataRepository implements IDataRepository {
       insert.push({
         id: agent.id,
         name: agent.name,
-        persona: agent.persona,
+        initial_persona_header: agent.initial_persona_header,
+        initial_persona: agent.initial_persona,
       });
     }
 
-    const placeholders = insert.map(() => "(?, ?, ?)").join(", ");
+    const placeholders = insert.map(() => "(?, ?, ?, ?)").join(", ");
     const values = insert.reduce(
-      (acc: any, cur: any) => [...acc, cur.id, cur.name, cur.persona],
+      (acc: any, cur: any) => [
+        ...acc,
+        cur.id,
+        cur.name,
+        cur.initial_persona_header,
+        cur.initial_persona,
+      ],
       [],
     );
 
-    const sql = `INSERT INTO agents (id, name, persona) VALUES ${placeholders}`;
+    const sql = `INSERT INTO agents (id, name, initial_persona_header, initial_persona) VALUES ${placeholders}`;
 
     await this.dbClient.insertData(sql, values);
   }

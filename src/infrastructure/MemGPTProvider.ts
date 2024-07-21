@@ -15,6 +15,7 @@ import { Utility } from "../Core/Utils/Utility";
 import { OpenAIProtocolTransport } from "./OpenAIProtocol/OpenAIProtocolTransport";
 import { Agent } from "../Core/Entities/Agent";
 import { IDataRepository } from "../Core/Interfaces/IDataRepository";
+import { CoreMemoryResponse } from "../Core/Data/MemGPT/CoreMemory";
 
 export class MemGPTProvider implements IMemGPTProvider {
   constructor(private dataRepository: IDataRepository) {}
@@ -152,10 +153,15 @@ export class MemGPTProvider implements IMemGPTProvider {
       console.log(`Creating persona ${i + 1} of ${bios.length}`);
       i++;
 
+      let body = {
+        name: bio.name,
+        text: bio.persona_header + bio.persona,
+      };
+
       try {
         const response = await axios.post(
           config.MEMGPT.BASE_URL + config.MEMGPT.ENDPOINTS.PERSONAS,
-          bio,
+          body,
           {
             headers: {
               authorization: `Bearer ${config.MEMGPT.AUTH_TOKEN}`,
@@ -181,6 +187,7 @@ export class MemGPTProvider implements IMemGPTProvider {
   async createUserTemplate(
     userTemplateName: string,
     userTemplate: string,
+    domain: string,
   ): Promise<void> {
     console.log("Creating user template");
     var body = {
@@ -201,7 +208,7 @@ export class MemGPTProvider implements IMemGPTProvider {
     );
 
     try {
-      let filePath = `${process.cwd()}/data/${config.IMPORTER.FILE_USER_CREATE_RESPONSE}`;
+      let filePath = `${process.cwd()}/data/domain/${domain}/${config.IMPORTER.FILE_USER_CREATE_RESPONSE}`;
       await fs.promises.writeFile(
         filePath,
         JSON.stringify(response.data),
@@ -241,7 +248,10 @@ export class MemGPTProvider implements IMemGPTProvider {
     }
   }
 
-  async createAgents(agents: Array<Agent>): Promise<Array<any>> {
+  async createAgents(
+    agents: Array<Agent>,
+    systemPrompt: string,
+  ): Promise<Array<any>> {
     let i = 0;
 
     let responses: Array<any> = [];
@@ -253,6 +263,8 @@ export class MemGPTProvider implements IMemGPTProvider {
       var body: any = {
         config: agent.package(),
       };
+
+      body.config.system = systemPrompt;
 
       try {
         const response = await axios.post(
@@ -274,5 +286,74 @@ export class MemGPTProvider implements IMemGPTProvider {
       }
     }
     return responses;
+  }
+
+  async getCoreMemory(agentId: string): Promise<CoreMemoryResponse> {
+    try {
+      const response = await axios.get(
+        `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/memory`,
+        {
+          headers: {
+            authorization: `Bearer ${config.MEMGPT.AUTH_TOKEN}`,
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      return response.data;
+    } catch (e) {
+      console.error("Error getting agent core memory", e);
+      throw e;
+    }
+  }
+
+  async updateCoreMemory(
+    agentId: string,
+    human: string,
+    persona: string,
+  ): Promise<void> {
+    try {
+      const response = await axios.post(
+        `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/memory`,
+        {
+          human: human,
+          persona: persona,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${config.MEMGPT.AUTH_TOKEN}`,
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      return response.data;
+    } catch (e) {
+      console.error("Error updating agent core memory");
+    }
+  }
+
+  async addToArchivalMemory(agentId: string, content: string): Promise<void> {
+    try {
+      const response = await axios.post(
+        `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/archival`,
+        {
+          content: content,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${config.MEMGPT.AUTH_TOKEN}`,
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      return response.data;
+    } catch (e) {
+      console.error("Error adding to agent archival memory");
+    }
   }
 }

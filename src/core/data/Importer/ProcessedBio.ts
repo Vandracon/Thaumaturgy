@@ -1,4 +1,5 @@
 export interface ProcessedBio {
   name: string;
-  text: string;
+  persona_header: string;
+  persona: string;
 }

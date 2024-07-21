@@ -7,6 +7,9 @@ import { OpenAIProtocolRouter } from "./routes/OpenAIProtocolRouter";
 import { DataImportRouter } from "./routes/DataImportRouter";
 import { Sqlite3DataProvider } from "../Infrastructure/Sqlite3DataProvider";
 import { MemGPTProvider } from "../Infrastructure/MemGPTProvider";
+import { MemGPTModRouter } from "./routes/MemGPTModRouter";
+import { MemGPTMod } from "../Infrastructure/MemGPTMod";
+import * as config from "config";
 
 class Server {
   private app: Application;
@@ -22,10 +25,18 @@ class Server {
     this.app.use(express.json());
 
     // Bootstrapper
-    let dbClient = new Sqlite3DataProvider();
+    let thaumaturgyDbClient = new Sqlite3DataProvider(
+      process.cwd() + "/thaumaturgy.db",
+      process.cwd() + "/thaumaturgydebug.db",
+    );
+    let memGPTDbClient = new Sqlite3DataProvider(
+      config.MEMGPT.MOD.MEMGPT_SQLITE_DATABASE_PATH,
+      undefined,
+    );
     let openAIProtocolLLMProvider = new OpenAIProtocolLLMProvider();
-    let dataRepository = new DataRepository(dbClient);
-    let memGPTProvider = new MemGPTProvider(dataRepository);
+    let thaumaturgyDataRepository = new DataRepository(thaumaturgyDbClient);
+    let memGPTProvider = new MemGPTProvider(thaumaturgyDataRepository);
+    let memGPTMod = new MemGPTMod(memGPTDbClient);
 
     // Routes
     new RootRouter(this.app);
@@ -33,14 +44,15 @@ class Server {
       this.app,
       openAIProtocolLLMProvider,
       memGPTProvider,
-      dataRepository,
+      thaumaturgyDataRepository,
     );
     new DataImportRouter(
       this.app,
       openAIProtocolLLMProvider,
       memGPTProvider,
-      dataRepository,
+      thaumaturgyDataRepository,
     );
+    new MemGPTModRouter(this.app, memGPTMod);
 
     this.start();
   }

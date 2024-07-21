@@ -47,7 +47,7 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
         let sys = await this.processSystemMessage(msg.content);
         agentId = sys.agent_id;
         msg.content = sys.updated_system_prompt;
-        user_message_prompt = sys.user_message_prompt;
+        //user_message_prompt = sys.user_message_prompt;
         if (msg.content && msg.content.length > 0) {
           hasSystemPrompt = true;
           systemMessageBody.message = msg.content;
@@ -57,8 +57,8 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
         }
       } else if (msg.role == "user") {
         let usrMsg = await this.processUserMessage(msg.content);
-        if (user_message_prompt ? user_message_prompt.length > 0 : false)
-          user_message_prompt += " ";
+        //if (user_message_prompt ? user_message_prompt.length > 0 : false)
+        //user_message_prompt += " ";
         msg.content = user_message_prompt + usrMsg;
         userMessageBody.message = msg.content;
       }
@@ -71,6 +71,8 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
     res.setHeader("Transfer-Encoding", "chunked");
 
     if (agentId && agentId.length > 0) {
+      // console.log("SYSTEM", systemMessageBody);
+      // console.log("USER", userMessageBody);
       await this.memGPTProvider.handleMessage(
         res,
         hasSystemPrompt,
@@ -117,7 +119,8 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
         characterData = new ThaumaturgyAgent(
           data[0].id,
           data[0].name,
-          data[0].persona,
+          data[0].initial_persona_header,
+          data[0].initial_persona,
         );
         console.log("Found NPC data", data);
       }

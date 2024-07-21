@@ -2,6 +2,8 @@
 *.db
 /data
 /tmp
+/local
+.vscode/settings.json
 ##
 
 ### Node ###

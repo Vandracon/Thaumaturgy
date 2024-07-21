@@ -5,6 +5,7 @@ import { IOpenAIProtocolLLMProvider } from "../../Core/Interfaces/IOpenAIProtoco
 import { ImportDomainData } from "../../Core/Data/Importer/ImportDomainData";
 import { IMemGPTProvider } from "../../Core/Interfaces/IMemGPTProvider";
 import { IDataRepository } from "../../Core/Interfaces/IDataRepository";
+import { ImportMemoriesData } from "../../Core/Data/Importer/ImportMemoriesData";
 
 export class DataImportController {
   private service: DataImportService;
@@ -17,6 +18,7 @@ export class DataImportController {
     this.service = new DataImportService(
       this.memGPTProvider,
       this.dataRepository,
+      this.llmProvider,
     );
   }
 
@@ -34,5 +36,12 @@ export class DataImportController {
     }
 
     await this.service.importDomainData(file, data, fileProcessor);
+  }
+
+  async importMemories(file: Express.Multer.File, data: ImportMemoriesData) {
+    let fileProcessor: IDataImportFileProcessor;
+
+    fileProcessor = new MantellaImportFileProcessor(this.llmProvider);
+    await this.service.importMemories(file, data, fileProcessor);
   }
 }
