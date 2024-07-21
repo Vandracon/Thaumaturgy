@@ -1,5 +1,7 @@
 import { UpdateAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAgentLLMConfig";
+import { UpdateAgentSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAgentSystemPromptData";
 import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
+import { UpdateAllAgentsSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentsSystemPromptData";
 import { IMemGPTModService } from "../../Core/Interfaces/IMemGPTModService";
 import { MemGPTModService } from "../../Core/Services/MemGPTModService";
 import { IMemGPTMod } from "../../Infrastructure/MemGPTMod";
@@ -12,10 +14,21 @@ export class MemGPTModController {
   }
 
   async updateAgentLLMConfig(data: UpdateAgentLLMConfig) {
-    this.service.updateAgentLLMConfig(data);
+    await this.service.updateAgentLLMConfig(data);
   }
 
   async updateAllAgentsLLMConfig(data: UpdateAllAgentLLMConfig) {
-    this.service.updateAllAgentsLLMConfig(data);
+    await this.service.updateAllAgentsLLMConfig(data);
+  }
+
+  async updateAgentBaseSystemPrompt(data: UpdateAgentSystemPromptData) {
+    await this.service.updateAgentBaseSystemPrompt(
+      data.agent_id,
+      data.new_prompt,
+    );
+  }
+
+  async updateAllAgentsBaseSystemPrompt(data: UpdateAllAgentsSystemPromptData) {
+    await this.service.updateAllAgentsBaseSystemPrompt(data.new_prompt);
   }
 }

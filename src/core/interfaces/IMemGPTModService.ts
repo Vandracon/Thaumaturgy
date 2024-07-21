@@ -4,4 +4,9 @@ import { UpdateAllAgentLLMConfig } from "../Data/MemGPT/Mod/UpdateAllAgentLLMCon
 export interface IMemGPTModService {
   updateAgentLLMConfig(data: UpdateAgentLLMConfig): Promise<void>;
   updateAllAgentsLLMConfig(data: UpdateAllAgentLLMConfig): Promise<void>;
+  updateAgentBaseSystemPrompt(
+    agentId: string,
+    newPrompt: string,
+  ): Promise<void>;
+  updateAllAgentsBaseSystemPrompt(newPrompt: string): Promise<void>;
 }

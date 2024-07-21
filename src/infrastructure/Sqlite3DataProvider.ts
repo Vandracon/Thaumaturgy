@@ -30,8 +30,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
     return new Promise((resolve, reject) => {
       this.db.run(sql, (err) => {
         if (err) {
-          console.error(err.message);
-          reject();
+          reject(err);
         }
         console.log("Table created.");
         resolve();
@@ -44,8 +43,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
       if (!this.debugDB) return reject("No debug database provided");
       this.debugDB.run(sql, (err) => {
         if (err) {
-          console.error(err.message);
-          reject();
+          reject(err);
         }
         console.log("Table created.");
         resolve();
@@ -57,8 +55,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
     return new Promise((resolve, reject) => {
       this.db.run(sql, values, function (this: RunResult, err) {
         if (err) {
-          console.error(err.message);
-          reject();
+          reject(err);
         }
         console.log(`Query complete. rowid ${this.lastID}`);
         resolve();
@@ -71,8 +68,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
       if (!this.debugDB) return reject("No debug database provided");
       this.debugDB.run(sql, values, function (this: RunResult, err) {
         if (err) {
-          console.error(err.message);
-          reject();
+          reject(err);
         }
         console.log(`Query complete. rowid ${this.lastID}`);
         resolve();
@@ -84,7 +80,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
     return new Promise((resolve, reject) => {
       this.db.all(sql, fields, (err, rows) => {
         if (err) {
-          throw err;
+          reject(err);
         }
         rows.forEach((row: any) => {
           console.log(row.message);

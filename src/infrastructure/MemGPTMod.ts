@@ -4,6 +4,11 @@ import { IDatabaseClient } from "../Core/Interfaces/IDatabaseClient";
 export interface IMemGPTMod {
   updateAgentLLMSettings(agentId: string, config: LLMConfig): Promise<void>;
   updateAllAgentLLMSettings(config: LLMConfig): Promise<void>;
+  updateAgentBaseSystemPrompt(
+    agentId: string,
+    newPrompt: string,
+  ): Promise<void>;
+  updateAllAgentsBaseSystemPrompt(newPrompt: string): Promise<void>;
 }
 
 /*
@@ -79,5 +84,21 @@ export class MemGPTMod implements IMemGPTMod {
       let sql = `UPDATE agents SET llm_config = json_set(llm_config, '$.context_window', ?)`;
       await this.dbClient.insertData(sql, [config.context_window]);
     }
+  }
+
+  async updateAgentBaseSystemPrompt(agentId: string, newPrompt: string) {
+    let sql = `UPDATE agents SET system = ? WHERE id = ?`;
+    await this.dbClient.insertData(sql, [newPrompt, agentId]);
+
+    sql = `UPDATE agents SET state = json_set(state, '$.system', ?) WHERE id = ?`;
+    await this.dbClient.insertData(sql, [newPrompt, agentId]);
+  }
+
+  async updateAllAgentsBaseSystemPrompt(newPrompt: string) {
+    let sql = `UPDATE agents SET system = ?`;
+    await this.dbClient.insertData(sql, [newPrompt]);
+
+    sql = `UPDATE agents SET state = json_set(state, '$.system', ?)`;
+    await this.dbClient.insertData(sql, [newPrompt]);
   }
 }

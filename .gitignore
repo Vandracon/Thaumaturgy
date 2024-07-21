@@ -4,6 +4,7 @@
 /tmp
 /local
 .vscode/settings.json
+/config/dev.json
 ##
 
 ### Node ###

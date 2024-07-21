@@ -13,4 +13,15 @@ export class MemGPTModService implements IMemGPTModService {
   async updateAllAgentsLLMConfig(data: UpdateAllAgentLLMConfig): Promise<void> {
     await this.memGPTMod.updateAllAgentLLMSettings(data.llm_config);
   }
+
+  async updateAgentBaseSystemPrompt(
+    agentId: string,
+    newPrompt: string,
+  ): Promise<void> {
+    await this.memGPTMod.updateAgentBaseSystemPrompt(agentId, newPrompt);
+  }
+
+  async updateAllAgentsBaseSystemPrompt(newPrompt: string): Promise<void> {
+    await this.memGPTMod.updateAllAgentsBaseSystemPrompt(newPrompt);
+  }
 }

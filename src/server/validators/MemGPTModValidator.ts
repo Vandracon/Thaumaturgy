@@ -1,6 +1,8 @@
 import { LLMConfig } from "../../Core/Data/MemGPT/Mod/LLMConfig";
 import { UpdateAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAgentLLMConfig";
+import { UpdateAgentSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAgentSystemPromptData";
 import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
+import { UpdateAllAgentsSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentsSystemPromptData";
 import { BaseValidator } from "./BaseValidator";
 
 export class MemGPTModValidator extends BaseValidator {
@@ -29,6 +31,29 @@ export class MemGPTModValidator extends BaseValidator {
       data.llm_config,
       validationReasons,
     );
+
+    return this.returnResult(
+      validationReasons.length ? false : true,
+      validationReasons,
+    );
+  }
+
+  validateUpdateAgentSystem(data: UpdateAgentSystemPromptData) {
+    let validationReasons: Array<string> = [];
+
+    if (!data.agent_id) validationReasons.push(`Missing agent_id`);
+    if (!data.new_prompt) validationReasons.push(`Missing new_prompt`);
+
+    return this.returnResult(
+      validationReasons.length ? false : true,
+      validationReasons,
+    );
+  }
+
+  validateUpdateAllAgentsSystem(data: UpdateAllAgentsSystemPromptData) {
+    let validationReasons: Array<string> = [];
+
+    if (!data.new_prompt) validationReasons.push(`Missing new_prompt`);
 
     return this.returnResult(
       validationReasons.length ? false : true,

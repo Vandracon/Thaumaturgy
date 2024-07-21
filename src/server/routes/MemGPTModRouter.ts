@@ -6,6 +6,8 @@ import { UpdateAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAgentLLMC
 import { HttpStatusCode } from "axios";
 import { IMemGPTMod } from "../../Infrastructure/MemGPTMod";
 import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
+import { UpdateAgentSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAgentSystemPromptData";
+import { UpdateAllAgentsSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentsSystemPromptData";
 
 export class MemGPTModRouter extends BaseRouter {
   private controller: MemGPTModController;
@@ -60,6 +62,54 @@ export class MemGPTModRouter extends BaseRouter {
           }
 
           await this.controller.updateAllAgentsLLMConfig(body);
+
+          res.json({ data: {} });
+        } catch (e: any) {
+          res
+            .status(HttpStatusCode.InternalServerError)
+            .json({ data: { error: e.message } });
+        }
+      },
+    );
+
+    this.app.post(
+      this.buildEndpoint("mod/agent/system"),
+      async (req: Request, res: Response) => {
+        try {
+          let body = req.body as UpdateAgentSystemPromptData;
+
+          let results = this.validator.validateUpdateAgentSystem(body);
+
+          if (!results.passed) {
+            res.status(HttpStatusCode.BadRequest).send({ data: results.data });
+            return;
+          }
+
+          await this.controller.updateAgentBaseSystemPrompt(body);
+
+          res.json({ data: {} });
+        } catch (e: any) {
+          res
+            .status(HttpStatusCode.InternalServerError)
+            .json({ data: { error: e.message } });
+        }
+      },
+    );
+
+    this.app.post(
+      this.buildEndpoint("mod/agents/system"),
+      async (req: Request, res: Response) => {
+        try {
+          let body = req.body as UpdateAllAgentsSystemPromptData;
+
+          let results = this.validator.validateUpdateAllAgentsSystem(body);
+
+          if (!results.passed) {
+            res.status(HttpStatusCode.BadRequest).send({ data: results.data });
+            return;
+          }
+
+          await this.controller.updateAllAgentsBaseSystemPrompt(body);
 
           res.json({ data: {} });
         } catch (e: any) {

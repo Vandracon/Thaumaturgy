@@ -6,6 +6,7 @@ import { IDataRepository } from "../Interfaces/IDataRepository";
 import { ThaumaturgyAgent } from "../Entities/Agent";
 import { LLMChatRequestMessageBody } from "../Data/OpenAIProtocol/LLMChatRequestMessageBody";
 import { Validator } from "../Validators/Validator";
+import { performance } from "perf_hooks";
 
 export class OpenAIProtocolService implements IOpenAIProtocolService {
   constructor(
@@ -70,6 +71,8 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
     res.setHeader("Connection", "keep-alive");
     res.setHeader("Transfer-Encoding", "chunked");
 
+    let startTime = performance.now();
+
     if (agentId && agentId.length > 0) {
       // console.log("SYSTEM", systemMessageBody);
       // console.log("USER", userMessageBody);
@@ -84,6 +87,12 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
       // If no agentId was found. Fallback to using the LLM directly
       await this.openAIProtocolLLMProvider.handleMessage(res, originalBody);
     }
+
+    let endTime = performance.now();
+
+    console.log(
+      `Function execution took ${(endTime - startTime) / 1000} seconds.`,
+    );
   }
 
   private parseCustomPrompt(msg: string) {
