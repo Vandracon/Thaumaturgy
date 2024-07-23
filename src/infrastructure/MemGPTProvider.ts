@@ -9,16 +9,30 @@ import {
   MemGPTChatResponse,
   FunctionCallMessage,
 } from "../Core/Data/MemGPT/MemGPTChatResponse";
-import { LLMChatCompletionResponse } from "../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
+import {
+  Choice,
+  LLMChatCompletionResponse,
+} from "../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
 import { Preset } from "../Core/Entities/Preset";
 import { Utility } from "../Core/Utils/Utility";
 import { OpenAIProtocolTransport } from "./OpenAIProtocol/OpenAIProtocolTransport";
 import { Agent } from "../Core/Entities/Agent";
 import { IDataRepository } from "../Core/Interfaces/IDataRepository";
 import { CoreMemoryResponse } from "../Core/Data/MemGPT/CoreMemory";
+import { Message } from "../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 
 export class MemGPTProvider implements IMemGPTProvider {
-  constructor(private dataRepository: IDataRepository) {}
+  private responseTimes: number[];
+  private dynamicTimeout: number;
+
+  constructor(private dataRepository: IDataRepository) {
+    this.responseTimes = [];
+    this.dynamicTimeout =
+      config.MEMGPT.ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS;
+
+    // A guard for a sane first value if config value is tiny
+    if (this.dynamicTimeout < 5000) this.dynamicTimeout = 5000;
+  }
 
   async handleMessage(
     res: Response,
@@ -55,6 +69,8 @@ export class MemGPTProvider implements IMemGPTProvider {
     );
     let response;
     try {
+      const startTime = Date.now();
+
       response = await axios.post(
         `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/messages`,
         userMessageBody,
@@ -63,11 +79,39 @@ export class MemGPTProvider implements IMemGPTProvider {
             "Content-Type": "application/json",
             Authorization: `Bearer ${config.MEMGPT.AUTH_TOKEN}`,
           },
-          timeout: 45000,
+          timeout: this.dynamicTimeout,
         },
       );
-    } catch (e) {
-      console.error("Unable to send user message to MemGPT");
+
+      // Dynamic Response Time
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      this.responseTimes.push(responseTime);
+
+      if (this.responseTimes.length > 100) {
+        // limit the size to the last 100 observations
+        this.responseTimes.shift();
+      }
+
+      const medianResponseTime = Utility.calculateMedian(this.responseTimes);
+      const mad = Utility.calculateMAD(this.responseTimes, medianResponseTime);
+
+      // Calculate MAD with 2x scale PLUS recent max
+      this.dynamicTimeout =
+        medianResponseTime +
+        config.MEMGPT.DYNAMIC_RESPONSE_TIME_SCALE * mad +
+        config.MEMGPT.ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS;
+      // End Dynamic Response Time
+
+      if (responseTime)
+        console.log(
+          `MemGPT Average Response Time: ${this.responseTimes.reduce((a, b) => a + b, 0) / this.responseTimes.length}ms`,
+        );
+      console.log(`New dynamic timeout ${this.dynamicTimeout}ms*`);
+    } catch (e: any) {
+      console.error(
+        `Unable to send user message to MemGPT${e ? ": " + e.message : ""}`,
+      );
       response = {
         data: Utility.getMockMemGPTResponse(),
       };
@@ -108,14 +152,9 @@ export class MemGPTProvider implements IMemGPTProvider {
             let spoken = JSON.parse(
               functionCallMessage.function_call.arguments,
             );
-            body.choices.push({
-              index: 0,
-              message: {
-                role: "assistant",
-                content: spoken.message,
-              },
-              finish_reason: "stop",
-            });
+            if (spoken.message && typeof spoken.message == "string") {
+              body.choices.push(this.createAssistantEndChoice(spoken.message));
+            }
           }
         }
       }
@@ -132,14 +171,20 @@ export class MemGPTProvider implements IMemGPTProvider {
     // AI decided not to respond with more dialog.
     // Inject random acknowledgement so user knows AI is done processing.
     if (body.choices.length == 0) {
-      body.choices.push({
-        index: 0,
-        message: {
-          role: "assistant",
-          content: Utility.randomAcknowledgement(),
-        },
-        finish_reason: "stop",
-      });
+      body.choices.push(
+        this.createAssistantEndChoice(Utility.randomAcknowledgement()),
+      );
+    }
+
+    // Combine all assistant messages into one if any occured, then replace the list.
+    if (body.choices.length > 1) {
+      let combinedContent = body.choices
+        .reduce((accumulator, current: Choice) => {
+          return accumulator + " " + (current.message as Message).content;
+        }, "")
+        .trim(); // Use trim to remove the leading space
+
+      body.choices = [this.createAssistantEndChoice(combinedContent)];
     }
 
     return body;
@@ -355,5 +400,16 @@ export class MemGPTProvider implements IMemGPTProvider {
     } catch (e) {
       console.error("Error adding to agent archival memory");
     }
+  }
+
+  private createAssistantEndChoice(msg: string) {
+    return {
+      index: 0,
+      message: {
+        role: "assistant",
+        content: msg,
+      },
+      finish_reason: "stop",
+    };
   }
 }

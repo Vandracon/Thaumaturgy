@@ -1,7 +1,7 @@
 {
   "MEMGPT": {
     "BASE_URL": "http://localhost:8283",
-    "AUTH_TOKEN": "j495Dxah-fqomF3FhK8iXQ",
+    "AUTH_TOKEN": "password",
     "ENDPOINTS": {
       "AUTH": "/api/auth",
       "PERSONAS": "/api/personas",
@@ -20,6 +20,8 @@
       { "name": "send_message" }
     ],
     "CORE_MEMORY_CHARACTER_LIMIT": 2000,
+    "DYNAMIC_RESPONSE_TIME_SCALE": 2,
+    "ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS": 9000,
     "MOD": {
       "MEMGPT_SQLITE_DATABASE_PATH": ""
     }

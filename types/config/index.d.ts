@@ -23,6 +23,8 @@ declare module "config" {
     ENDPOINTS: IMemGPTEndpointsConfig;
     FUNCTIONS_SCHEMA: Array<FunctionSchema>;
     CORE_MEMORY_CHARACTER_LIMIT: number;
+    DYNAMIC_RESPONSE_TIME_SCALE: number;
+    ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS: number;
     MOD: IMemGPTModConfig;
   }
 

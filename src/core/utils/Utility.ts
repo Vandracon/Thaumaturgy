@@ -1,4 +1,5 @@
 import { Message } from "../Data/OpenAIProtocol/LLMChatCompletionRequestBody";
+import * as config from "config";
 
 export class Utility {
   public static generateChatChunkId() {
@@ -13,11 +14,12 @@ export class Utility {
 
   public static randomAcknowledgement() {
     const acknowledgements = [
-      "Right, I have no more to say at the moment.",
-      "Okay, that's all I can say at the moment.",
-      "Uh-huh, I understand what you're saying.",
-      "I understand, I have nothing yet to say.",
-      "Interesting, but I have no reply yet.",
+      // "Right, I have no more to say at the moment.",
+      // "Okay, that's all I can say at the moment.",
+      // "Uh-huh, I understand what you're saying.",
+      // "I understand, I have nothing yet to say.",
+      // "Interesting, but I have no reply yet.",
+      "I have no response at the moment.",
     ];
 
     const randomIndex = Math.floor(Math.random() * acknowledgements.length);
@@ -56,5 +58,22 @@ export class Utility {
         step_count: 0,
       },
     };
+  }
+
+  public static calculateMedian(values: number[]): number {
+    if (values.length === 0) return 0;
+
+    values.sort((a, b) => a - b);
+
+    const half = Math.floor(values.length / 2);
+
+    if (values.length % 2) return values[half];
+
+    return (values[half - 1] + values[half]) / 2.0;
+  }
+
+  public static calculateMAD(values: number[], median: number): number {
+    const deviations = values.map((value) => Math.abs(value - median));
+    return this.calculateMedian(deviations);
   }
 }

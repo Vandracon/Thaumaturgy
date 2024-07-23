@@ -57,7 +57,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
         if (err) {
           reject(err);
         }
-        console.log(`Query complete. rowid ${this.lastID}`);
+        console.log(`Query complete. lastId ${this.lastID}`);
         resolve();
       });
     });
@@ -70,7 +70,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
         if (err) {
           reject(err);
         }
-        console.log(`Query complete. rowid ${this.lastID}`);
+        console.log(`Query complete. lastId ${this.lastID}`);
         resolve();
       });
     });
