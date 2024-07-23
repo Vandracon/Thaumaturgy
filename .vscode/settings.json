@@ -4,6 +4,30 @@
   "workbench.colorCustomizations": {
     "activityBar.background": "#03351F",
     "titleBar.activeBackground": "#800080",
-    "titleBar.activeForeground": "#ECFEF6"
-  }
+    "titleBar.activeForeground": "#ECFEF6",
+    "folderPathColor.infrastructure": "#FF4488",
+    "folderPathColor.custom1": "#d6ee00",
+    "folderPathColor.custom2": "#ff5b32",
+    "folderPathColor.custom3": "#8490ff"
+  },
+  "folder-path-color.folders": [
+    {
+      "path": "src/Core",
+      "symbol": "C",
+      "tooltip": "Core Layer",
+      "color": "custom1"
+    },
+    {
+      "path": "src/Infrastructure",
+      "symbol": "I",
+      "tooltip": "Infrastructure Layer",
+      "color": "custom2"
+    },
+    {
+      "path": "src/Server",
+      "symbol": "S",
+      "tooltip": "Server/App",
+      "color": "custom3"
+    }
+  ]
 }
