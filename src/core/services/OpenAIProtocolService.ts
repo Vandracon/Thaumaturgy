@@ -7,6 +7,7 @@ import { ThaumaturgyAgent } from "../Entities/Agent";
 import { LLMChatRequestMessageBody } from "../Data/OpenAIProtocol/LLMChatRequestMessageBody";
 import { Validator } from "../Validators/Validator";
 import { performance } from "perf_hooks";
+import { Bootstraper } from "../../Server/Bootstrapper";
 
 export class OpenAIProtocolService implements IOpenAIProtocolService {
   constructor(
@@ -24,7 +25,7 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
     console.log("Incoming /v1/chat/completions", req.body);
 
     let agentId: string | null = "";
-    let hasSystemPrompt = false;
+    let hasSystemPromptForMemGPT = false;
     let systemMessageBody: LLMChatRequestMessageBody = {
       message: "",
       role: "system",
@@ -50,7 +51,7 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
         msg.content = sys.updated_system_prompt;
         //user_message_prompt = sys.user_message_prompt;
         if (msg.content && msg.content.length > 0) {
-          hasSystemPrompt = true;
+          hasSystemPromptForMemGPT = true;
           systemMessageBody.message = msg.content;
         } else {
           msg.content = sys.fallback_prompt;
@@ -66,10 +67,14 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
     }
 
     // Set the appropriate headers
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.setHeader("Transfer-Encoding", "chunked");
+    if (req.body.stream) {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.setHeader("Transfer-Encoding", "chunked");
+    } else {
+      res.setHeader("Content-Type", "application/json");
+    }
 
     let startTime = performance.now();
 
@@ -78,12 +83,17 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
       // console.log("USER", userMessageBody);
       await this.memGPTProvider.handleMessage(
         res,
-        hasSystemPrompt,
+        hasSystemPromptForMemGPT,
         agentId,
         systemMessageBody,
         userMessageBody,
       );
     } else {
+      Bootstraper.getAudioPlayer().playSound(
+        `${process.cwd()}/data/sounds/beep-llm.wav`,
+        0.05,
+      );
+
       // If no agentId was found. Fallback to using the LLM directly
       await this.openAIProtocolLLMProvider.handleMessage(res, originalBody);
     }

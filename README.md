@@ -13,3 +13,7 @@ This was again, the most recent release and is even more important to adhere to 
 Instead of running your characters through the importer, I've already done so with Skyrim's character.csv that came with the release. About 400 or so had bios that were too long so I used an LLM to summarize and shorten them a bit; the rest were fine.
 
 I've also included a sqlite database of a freshly imported MemGPT database containing all 2450 (approx) characters. Once you have MemGPT setup, go to your home directory's .memgpt folder and replace the sqlite database there to be good to go. If you configured MemGPT with chroma, you'll want to backup that sqlite database if you ever want to reset or contain multiple pairs of files for different games/saves.
+
+# Notes
+
+docker build --target development --build-arg MEMGPT_ENVIRONMENT=DEVELOPMENT -t memgpt-development .

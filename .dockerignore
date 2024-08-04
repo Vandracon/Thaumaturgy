@@ -1,0 +1,16 @@
+.vscode
+config/dev.json
+local
+node_modules
+src
+tmp
+types
+.dockerignore
+.gitignore
+.prettierignore
+.prettierrc.json
+Dockerfile
+eslint.config.js
+tsconfig.json
+*.md
+.git

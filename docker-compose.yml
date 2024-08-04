@@ -1,0 +1,35 @@
+version: "3"
+services:
+  thaumaturgy:
+    privileged: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vandracon/thaumaturgy:1.0.0
+    volumes:
+      - ./config:/app/config
+      - ./local/instance/data/thaumaturgy.db:/app/local/thaumaturgy.db
+      - ./local/instance/data/thaumaturgydebug.db:/app/local/thaumaturgydebug.db
+      - ./local/instance/data/sqlite.db:/app/local/sqlite.db
+    environment:
+      - NODE_ENV=production
+      - MEMGPT_SQLITE_DATABASE_PATH=/app/data/sqlite.db
+    ports:
+      - "8050:8050"
+
+  memgpt_server:
+    image: vandracon/thaumaturgy/memgpt:1.0.0
+    hostname: memgpt-server
+    env_file:
+      - ./local/instance/.env
+    environment:
+      - MEMGPT_SERVER_PASS=test_server_token
+      - WATCHFILES_FORCE_POLLING=true
+
+    volumes:
+      - ./local/instance/memgpt/.env:/root/.memgpt/.env
+      # - ~/.memgpt/credentials:/root/.memgpt/credentials
+      - ./local/instance/server_config.yaml:/root/.memgpt/config
+    ports:
+      - "8083:8083"
+      - "8283:8283"

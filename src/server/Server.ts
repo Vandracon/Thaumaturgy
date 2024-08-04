@@ -10,6 +10,9 @@ import { MemGPTProvider } from "../Infrastructure/MemGPTProvider";
 import { MemGPTModRouter } from "./routes/MemGPTModRouter";
 import { MemGPTMod } from "../Infrastructure/MemGPTMod";
 import * as config from "config";
+import { temporaryFileRemover } from "./middleware/TempFileRemover";
+import { Bootstraper } from "./Bootstrapper";
+import { SoundPlayAudioPlayer } from "../Infrastructure/SoundPlayAudioPlayer";
 
 class Server {
   private app: Application;
@@ -23,11 +26,13 @@ class Server {
     ErrorHandlingMiddleware.SystemErrorHandle();
     ErrorHandlingMiddleware.ExpressErrorHandle(this.app);
     this.app.use(express.json());
+    this.app.use(temporaryFileRemover);
 
     // Bootstrapper
+    Bootstraper.init(new SoundPlayAudioPlayer());
     let thaumaturgyDbClient = new Sqlite3DataProvider(
-      process.cwd() + "/thaumaturgy.db",
-      process.cwd() + "/thaumaturgydebug.db",
+      process.cwd() + "/local/thaumaturgy.db",
+      process.cwd() + "/local/thaumaturgydebug.db",
     );
     let memGPTDbClient = new Sqlite3DataProvider(
       config.MEMGPT.MOD.MEMGPT_SQLITE_DATABASE_PATH,

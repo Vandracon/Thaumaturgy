@@ -1,5 +1,4 @@
 import axios from "axios";
-import { OpenAIProtocolTransport } from "./OpenAIProtocolTransport";
 import { Response } from "express";
 import * as config from "config";
 import { IOpenAIProtocolLLMProvider } from "../../Core/Interfaces/IOpenAIProtocolLLMProvider";
@@ -14,22 +13,35 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
     };
 
     let orig = JSON.parse(originalBody);
-    orig.stream = false;
     orig.messages = Validator.removeEmptyContent(orig.messages);
 
-    console.log("Sending original incoming msg to fallback LLM");
-    const response = await axios.post(config.LLM.ENDPOINT, orig, {
-      headers: headers,
-    });
-
-    console.log("\n\nLLM Response", JSON.stringify(response.data));
-
-    orig = JSON.parse(originalBody);
-
     if (orig.stream) {
-      await OpenAIProtocolTransport.streamToClient(res, response.data);
-      res.end();
+      console.log("Streaming LLM response to client");
+      const streamResponse = await axios({
+        method: "post",
+        url: config.LLM.ENDPOINT,
+        headers: headers,
+        data: orig,
+        responseType: "stream",
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        streamResponse.data.pipe(res);
+        streamResponse.data.on("end", () => {
+          res.end();
+          resolve();
+        });
+        streamResponse.data.on("error", (error: Error) => {
+          console.error("Error streaming data:", error);
+          res.status(500).end();
+          reject(error);
+        });
+      });
     } else {
+      const response = await axios.post(config.LLM.ENDPOINT, orig, {
+        headers: headers,
+      });
+      console.log("\n\nNon-Stream LLM Response", JSON.stringify(response.data));
       res.json(response.data);
     }
   }

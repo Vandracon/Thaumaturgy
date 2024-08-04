@@ -21,14 +21,15 @@
     ],
     "CORE_MEMORY_CHARACTER_LIMIT": 2000,
     "DYNAMIC_RESPONSE_TIME_SCALE": 2,
-    "ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS": 9000,
+    "ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS": 140000,
+    "ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_FOR_FIRST_MESSAGE_IN_MS": 15000,
     "MOD": {
       "MEMGPT_SQLITE_DATABASE_PATH": ""
     }
   },
 
   "LLM": {
-    "ENDPOINT": "http://localhost:8069/v1/chat/completions"
+    "ENDPOINT": "http://localhost:5001/v1/chat/completions"
   },
 
   "IMPORTER": {

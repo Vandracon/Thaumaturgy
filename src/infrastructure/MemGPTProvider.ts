@@ -20,10 +20,12 @@ import { Agent } from "../Core/Entities/Agent";
 import { IDataRepository } from "../Core/Interfaces/IDataRepository";
 import { CoreMemoryResponse } from "../Core/Data/MemGPT/CoreMemory";
 import { Message } from "../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
+import { Bootstraper } from "../Server/Bootstrapper";
 
 export class MemGPTProvider implements IMemGPTProvider {
   private responseTimes: number[];
   private dynamicTimeout: number;
+  private firstMessageTracker: { [key: string]: boolean };
 
   constructor(private dataRepository: IDataRepository) {
     this.responseTimes = [];
@@ -32,6 +34,7 @@ export class MemGPTProvider implements IMemGPTProvider {
 
     // A guard for a sane first value if config value is tiny
     if (this.dynamicTimeout < 5000) this.dynamicTimeout = 5000;
+    this.firstMessageTracker = {};
   }
 
   async handleMessage(
@@ -70,6 +73,13 @@ export class MemGPTProvider implements IMemGPTProvider {
     let response;
     try {
       const startTime = Date.now();
+
+      // First messages to agents could take a little longer to initialize so we add padding to dynamicTimeout.
+      if (!this.firstMessageTracker[agentId]) {
+        this.dynamicTimeout +=
+          config.MEMGPT.ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_FOR_FIRST_MESSAGE_IN_MS;
+        this.firstMessageTracker[agentId] = true;
+      }
 
       response = await axios.post(
         `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/messages`,
@@ -115,6 +125,11 @@ export class MemGPTProvider implements IMemGPTProvider {
       response = {
         data: Utility.getMockMemGPTResponse(),
       };
+
+      Bootstraper.getAudioPlayer().playSound(
+        `${process.cwd()}/data/sounds/beep-bad.wav`,
+        0.05,
+      );
     }
 
     let reply = this.processResponseFromMemGPT(response.data);
