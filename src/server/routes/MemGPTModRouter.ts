@@ -4,7 +4,7 @@ import { MemGPTModValidator } from "../validators/MemGPTModValidator";
 import { BaseRouter } from "./BaseRouter";
 import { UpdateAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAgentLLMConfig";
 import { HttpStatusCode } from "axios";
-import { IMemGPTMod } from "../../Infrastructure/MemGPTMod";
+import { IMemGPTMod } from "../../Infrastructure/MemGPT/MemGPTMod";
 import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
 import { UpdateAgentSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAgentSystemPromptData";
 import { UpdateAllAgentsSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentsSystemPromptData";

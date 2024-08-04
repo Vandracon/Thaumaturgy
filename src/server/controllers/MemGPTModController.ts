@@ -4,7 +4,7 @@ import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAge
 import { UpdateAllAgentsSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentsSystemPromptData";
 import { IMemGPTModService } from "../../Core/Interfaces/IMemGPTModService";
 import { MemGPTModService } from "../../Core/Services/MemGPTModService";
-import { IMemGPTMod } from "../../Infrastructure/MemGPTMod";
+import { IMemGPTMod } from "../../Infrastructure/MemGPT/MemGPTMod";
 
 export class MemGPTModController {
   private service: IMemGPTModService;

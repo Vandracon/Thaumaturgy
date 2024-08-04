@@ -1,4 +1,4 @@
-import { IMemGPTMod } from "../../Infrastructure/MemGPTMod";
+import { IMemGPTMod } from "../../Infrastructure/MemGPT/MemGPTMod";
 import { UpdateAgentLLMConfig } from "../Data/MemGPT/Mod/UpdateAgentLLMConfig";
 import { UpdateAllAgentLLMConfig } from "../Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
 import { IMemGPTModService } from "../Interfaces/IMemGPTModService";

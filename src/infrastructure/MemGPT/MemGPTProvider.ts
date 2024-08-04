@@ -2,32 +2,35 @@ import axios from "axios";
 import { Response } from "express";
 import * as config from "config";
 import fs from "fs";
-import { IMemGPTProvider } from "../Core/Interfaces/IMemGPTProvider";
-import { LLMChatRequestMessageBody } from "../Core/Data/OpenAIProtocol/LLMChatRequestMessageBody";
-import { ProcessedBio } from "../Core/Data/Importer/ProcessedBio";
+import { IMemGPTProvider } from "../../Core/Interfaces/IMemGPTProvider";
+import { LLMChatRequestMessageBody } from "../../Core/Data/OpenAIProtocol/LLMChatRequestMessageBody";
+import { ProcessedBio } from "../../Core/Data/Importer/ProcessedBio";
 import {
   MemGPTChatResponse,
   FunctionCallMessage,
-} from "../Core/Data/MemGPT/MemGPTChatResponse";
+} from "../../Core/Data/MemGPT/MemGPTChatResponse";
 import {
   Choice,
   LLMChatCompletionResponse,
-} from "../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
-import { Preset } from "../Core/Entities/Preset";
-import { Utility } from "../Core/Utils/Utility";
-import { OpenAIProtocolTransport } from "./OpenAIProtocol/OpenAIProtocolTransport";
-import { Agent } from "../Core/Entities/Agent";
-import { IDataRepository } from "../Core/Interfaces/IDataRepository";
-import { CoreMemoryResponse } from "../Core/Data/MemGPT/CoreMemory";
-import { Message } from "../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
-import { Bootstraper } from "../Server/Bootstrapper";
+} from "../../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
+import { Preset } from "../../Core/Entities/Preset";
+import { Utility } from "../../Core/Utils/Utility";
+import { OpenAIProtocolTransport } from "./../OpenAIProtocol/OpenAIProtocolTransport";
+import { Agent } from "../../Core/Entities/Agent";
+import { IDataRepository } from "../../Core/Interfaces/IDataRepository";
+import { CoreMemoryResponse } from "../../Core/Data/MemGPT/CoreMemory";
+import { Message } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
+import { Bootstraper } from "../../Server/Bootstrapper";
+import { MemGPTProviderUtils } from "./MemGPTProviderUtils";
 
 export class MemGPTProvider implements IMemGPTProvider {
+  private memGPTProviderUtils: MemGPTProviderUtils;
   private responseTimes: number[];
   private dynamicTimeout: number;
   private firstMessageTracker: { [key: string]: boolean };
 
   constructor(private dataRepository: IDataRepository) {
+    this.memGPTProviderUtils = new MemGPTProviderUtils();
     this.responseTimes = [];
     this.dynamicTimeout =
       config.MEMGPT.ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS;
@@ -46,8 +49,22 @@ export class MemGPTProvider implements IMemGPTProvider {
   ) {
     console.log("Using MemGPT");
 
-    if (hasSystemPrompt) {
+    let canSendSystemAlert =
+      this.memGPTProviderUtils.canSendSystemAlerts(agentId);
+
+    // todo: need to get systemPrompts to show up again from processing unique format for group convos.
+
+    // Just metrics
+    if (hasSystemPrompt && !canSendSystemAlert) {
+      console.log(
+        `Can't send system alert to agentId: ${agentId} so soon after the previous one.`,
+      );
+    }
+    // End
+
+    if (hasSystemPrompt && canSendSystemAlert) {
       console.log("Sending system alert to MemGPT");
+      this.memGPTProviderUtils.sendingSystemAlert(agentId);
       try {
         await axios.post(
           `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/messages`,
@@ -70,6 +87,8 @@ export class MemGPTProvider implements IMemGPTProvider {
       `Posting user message to MemGPT agentId: ${agentId}`,
       userMessageBody,
     );
+    this.memGPTProviderUtils.sendingUserMessage(agentId);
+
     let response;
     try {
       const startTime = Date.now();
@@ -106,7 +125,7 @@ export class MemGPTProvider implements IMemGPTProvider {
       const medianResponseTime = Utility.calculateMedian(this.responseTimes);
       const mad = Utility.calculateMAD(this.responseTimes, medianResponseTime);
 
-      // Calculate MAD with 2x scale PLUS recent max
+      // Calculate MAD with scale PLUS recent max
       this.dynamicTimeout =
         medianResponseTime +
         config.MEMGPT.DYNAMIC_RESPONSE_TIME_SCALE * mad +

@@ -1,5 +1,5 @@
-import { LLMConfig } from "../Core/Data/MemGPT/Mod/LLMConfig";
-import { IDatabaseClient } from "../Core/Interfaces/IDatabaseClient";
+import { LLMConfig } from "../../Core/Data/MemGPT/Mod/LLMConfig";
+import { IDatabaseClient } from "../../Core/Interfaces/IDatabaseClient";
 
 export interface IMemGPTMod {
   updateAgentLLMSettings(agentId: string, config: LLMConfig): Promise<void>;
