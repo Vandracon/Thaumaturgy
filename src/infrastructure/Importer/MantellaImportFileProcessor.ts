@@ -129,7 +129,7 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
   }
 
   private async summarizeBio(bio: string) {
-    const response = await this.llmProvider.chatToLLM(
+    const response = await this.llmProvider.simpleUserRequestToLLM(
       `Extract the most important information from the following text and present it in an extended summary (2 paragraphs):`,
       `${bio}`,
       450,

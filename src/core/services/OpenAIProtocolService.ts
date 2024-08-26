@@ -8,6 +8,9 @@ import { LLMChatRequestMessageBody } from "../Data/OpenAIProtocol/LLMChatRequest
 import { Validator } from "../Validators/Validator";
 import { performance } from "perf_hooks";
 import { Bootstraper } from "../../Server/Bootstrapper";
+import { IThaumicRequest, ThaumicIntent } from "../Data/ThaumicRequest";
+import { Utility } from "../Utils/Utility";
+import * as config from "config";
 
 export class OpenAIProtocolService implements IOpenAIProtocolService {
   constructor(
@@ -22,10 +25,14 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
     }
 
     let originalBody = JSON.stringify(req.body);
-    console.log("Incoming /v1/chat/completions", req.body);
+    console.log("Incoming /v1/chat/completions", originalBody);
 
-    let agentId: string | null = "";
+    let agents: Array<ThaumaturgyAgent> | null = [];
     let hasSystemPromptForMemGPT = false;
+    let dynamicData = "";
+    let playerUserIncluded = false;
+    let intent: ThaumicIntent = ThaumicIntent.ONE_ON_ONE;
+    let maxTokens = req.body.max_tokens;
     let systemMessageBody: LLMChatRequestMessageBody = {
       message: "",
       role: "system",
@@ -37,19 +44,13 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
       stream: false,
     };
 
-    /* 
-        Todo: Update when MemGPT supports runtime prompt editing.
-        Adds a small bit of info from game to the user message under *msg* format for now.
-        The rest of the former prompt is already added to the system.
-      */
-    let user_message_prompt: string | null = "";
-
     for (let msg of req.body.messages) {
       if (msg.role == "system") {
         let sys = await this.processSystemMessage(msg.content);
-        agentId = sys.agent_id;
+        agents = sys.agents;
         msg.content = sys.updated_system_prompt;
-        //user_message_prompt = sys.user_message_prompt;
+        playerUserIncluded = sys.player_user_included || false;
+        intent = sys.intent || ThaumicIntent.ONE_ON_ONE;
         if (msg.content && msg.content.length > 0) {
           hasSystemPromptForMemGPT = true;
           systemMessageBody.message = msg.content;
@@ -59,9 +60,7 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
         }
       } else if (msg.role == "user") {
         let usrMsg = await this.processUserMessage(msg.content);
-        //if (user_message_prompt ? user_message_prompt.length > 0 : false)
-        //user_message_prompt += " ";
-        msg.content = user_message_prompt + usrMsg;
+        msg.content = (dynamicData.length ? dynamicData + " " : "") + usrMsg;
         userMessageBody.message = msg.content;
       }
     }
@@ -78,21 +77,53 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
 
     let startTime = performance.now();
 
-    if (agentId && agentId.length > 0) {
-      // console.log("SYSTEM", systemMessageBody);
-      // console.log("USER", userMessageBody);
-      await this.memGPTProvider.handleMessage(
+    if (agents && intent == ThaumicIntent.ONE_ON_ONE) {
+      console.log("Handling one on one message");
+      await this.memGPTProvider.handleOneOnOneMessage(
         res,
         hasSystemPromptForMemGPT,
-        agentId,
+        agents[0].id,
         systemMessageBody,
         userMessageBody,
       );
-    } else {
-      Bootstraper.getAudioPlayer().playSound(
-        `${process.cwd()}/data/sounds/beep-llm.wav`,
-        0.05,
+    } else if (agents && intent == ThaumicIntent.GROUP_CONVERSATION) {
+      console.log("Handling group message");
+      if (!maxTokens) {
+        console.warn(
+          `Max tokens not provided in request, using default ${config.LLM.FALLBACK_MAX_TOKENS}`,
+        );
+        maxTokens = config.LLM.FALLBACK_MAX_TOKENS;
+      }
+      await this.memGPTProvider.handleGroupMessage(
+        res,
+        hasSystemPromptForMemGPT,
+        agents,
+        systemMessageBody,
+        userMessageBody,
+        originalBody,
+        playerUserIncluded,
+        maxTokens,
       );
+    } else if (
+      intent == ThaumicIntent.SUMMARIZE &&
+      this.memGPTProvider.isInGroupConversation()
+    ) {
+      console.log("Handling group summary message");
+      // Do normal LLM request for the summary.
+      await this.openAIProtocolLLMProvider.handleMessage(res, originalBody);
+
+      // End convo / notify MemGPT agents of any updates from the convo.
+      await this.memGPTProvider.endGroupConversation(
+        //hasSystemPromptForMemGPT,
+        //systemMessageBody,
+        //userMessageBody,
+        originalBody,
+        //playerUserIncluded,
+        //maxTokens,
+      );
+    } else {
+      console.log("Using LLM directly");
+      Bootstraper.getAudioPlayer().playLLMBeep(0.05);
 
       // If no agentId was found. Fallback to using the LLM directly
       await this.openAIProtocolLLMProvider.handleMessage(res, originalBody);
@@ -105,13 +136,34 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
     );
   }
 
-  private parseCustomPrompt(msg: string) {
+  private parseCustomPrompt(msg: string): IThaumicRequest {
     let msgData = msg.split("|=|");
+
+    let isThaumic = msgData.length > 1;
+    let intent = Number(msgData[0]);
+    let uids: string[] = [];
+    let thaumicSystemPrompt = "";
+    let fallback_prompt = "";
+
+    if (intent == ThaumicIntent.ONE_ON_ONE) {
+      uids = [msgData[1]];
+      fallback_prompt = msgData[2];
+    } else if (intent == ThaumicIntent.GROUP_CONVERSATION) {
+      // Parse the list of agent uids (names)
+      uids = Utility.convertStringNameFormatToArrayOfNames(msgData[1]);
+      thaumicSystemPrompt = msgData[2];
+      fallback_prompt = msgData[3];
+    } else if (intent == ThaumicIntent.SUMMARIZE) {
+      uids = [msgData[1]];
+      fallback_prompt = msgData[2];
+    }
+
     return {
-      is_thaumic: msgData[0] && msgData[1] && msgData[2],
-      name: msgData[0],
-      prompt: msgData[1],
-      fallback_prompt: msgData[2],
+      is_thaumic: isThaumic,
+      intent: Number(msgData[0]),
+      uids: uids,
+      thaumicSystemPrompt: thaumicSystemPrompt,
+      fallback_prompt: fallback_prompt,
     };
   }
 
@@ -123,37 +175,56 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
     let msgData = this.parseCustomPrompt(msg);
 
     if (msgData.is_thaumic) {
-      let data = await this.dataRepository.getAgentByName(msgData.name);
+      let agents: Array<ThaumaturgyAgent> = [];
+      let playerUserIncluded = false;
 
-      // todo: check if message had delimeters and if not.. don't log name as some long msg.
-      if (data.length > 1)
-        console.warn(
-          "Query for NPC returned more than one result. Using first.. but this is a problem.",
-        );
-      if (data.length == 0)
-        console.warn(`Could not find NPC by the name of ${msgData.name}`);
+      let fails = 0;
+      for (const [index, uid] of msgData.uids.entries()) {
+        let tAgentRes = await this.dataRepository.getAgentByName(uid);
 
-      let characterData: ThaumaturgyAgent | null = null;
-      if (data.length > 0) {
-        characterData = new ThaumaturgyAgent(
-          data[0].id,
-          data[0].name,
-          data[0].initial_persona_header,
-          data[0].initial_persona,
+        if (tAgentRes.length == 0) {
+          if (index === msgData.uids.length - 1) {
+            // If it could not be found and is last index. Likely it is the named player.
+            playerUserIncluded = true;
+            continue;
+          }
+
+          console.warn(`Could not find NPC by the name of ${uid}`);
+          Bootstraper.getAudioPlayer().playNoNPCFoundBeep();
+          fails++;
+          continue;
+        }
+        if (tAgentRes.length > 1) {
+          console.warn(
+            "Query for NPC returned more than one result. Using first.. but this is a problem.",
+          );
+        }
+
+        agents.push(
+          new ThaumaturgyAgent(
+            tAgentRes[0].id,
+            tAgentRes[0].name,
+            tAgentRes[0].initial_persona_header,
+            tAgentRes[0].initial_persona,
+          ),
         );
-        console.log("Found NPC data", data);
+        console.log(
+          `Found NPC data for ${tAgentRes[0].name} ID: ${tAgentRes[0].id}`,
+        );
       }
 
       return {
-        agent_id: characterData ? characterData.id : null,
-        user_message_prompt: msgData.prompt,
-        updated_system_prompt: "", //msgData.prompt,
+        agents: agents.length ? agents : null,
+        intent: msgData.intent,
+        updated_system_prompt: msgData.thaumicSystemPrompt
+          ? msgData.thaumicSystemPrompt
+          : "",
         fallback_prompt: msgData.fallback_prompt,
+        player_user_included: playerUserIncluded,
       };
     } else {
       return {
-        agent_id: null,
-        user_message_prompt: null,
+        agents: null,
         fallback_prompt: msg,
       };
     }

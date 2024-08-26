@@ -4,9 +4,10 @@ import * as config from "config";
 import { IOpenAIProtocolLLMProvider } from "../../Core/Interfaces/IOpenAIProtocolLLMProvider";
 import { Validator } from "../../Core/Validators/Validator";
 import { LLMChatCompletionResponse } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
+import { Message } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 
 export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
-  async handleMessage(res: Response, originalBody: string) {
+  async handleMessage(res: Response, originalBody: string): Promise<void> {
     const headers = {
       //'Authorization': `Bearer YOUR_OPEN_AI_KEY`,
       "Content-Type": "application/json",
@@ -46,7 +47,7 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
     }
   }
 
-  async chatToLLM(
+  async simpleUserRequestToLLM(
     systemPrompt: string | null,
     userPrompt: string | null,
     maxTokens: number,
@@ -73,6 +74,31 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
       return response.data;
     } catch (error) {
       console.error("Error fetching response from LLM:", error);
+      throw error;
+    }
+  }
+
+  async sendToLLM(
+    messages: Array<Message>,
+    maxTokens: number,
+  ): Promise<LLMChatCompletionResponse> {
+    const headers = {
+      //'Authorization': `Bearer YOUR_OPEN_AI_KEY`,
+      "Content-Type": "application/json",
+    };
+    const data = {
+      messages: messages,
+      max_tokens: maxTokens,
+    };
+
+    try {
+      const response = await axios.post(config.LLM.ENDPOINT, data, {
+        headers: headers,
+      });
+      console.log("LLM Response (sendToLLM): ", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching response from LLM (sendToLLM):", error);
       throw error;
     }
   }

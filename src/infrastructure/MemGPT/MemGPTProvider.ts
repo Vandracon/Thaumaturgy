@@ -5,32 +5,26 @@ import fs from "fs";
 import { IMemGPTProvider } from "../../Core/Interfaces/IMemGPTProvider";
 import { LLMChatRequestMessageBody } from "../../Core/Data/OpenAIProtocol/LLMChatRequestMessageBody";
 import { ProcessedBio } from "../../Core/Data/Importer/ProcessedBio";
-import {
-  MemGPTChatResponse,
-  FunctionCallMessage,
-} from "../../Core/Data/MemGPT/MemGPTChatResponse";
-import {
-  Choice,
-  LLMChatCompletionResponse,
-} from "../../Core/Data/OpenAIProtocol/LLMChatCompletionResponse";
 import { Preset } from "../../Core/Entities/Preset";
 import { Utility } from "../../Core/Utils/Utility";
 import { OpenAIProtocolTransport } from "./../OpenAIProtocol/OpenAIProtocolTransport";
-import { Agent } from "../../Core/Entities/Agent";
+import { Agent, ThaumaturgyAgent } from "../../Core/Entities/Agent";
 import { IDataRepository } from "../../Core/Interfaces/IDataRepository";
 import { CoreMemoryResponse } from "../../Core/Data/MemGPT/CoreMemory";
-import { Message } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 import { Bootstraper } from "../../Server/Bootstrapper";
 import { MemGPTProviderUtils } from "./MemGPTProviderUtils";
+import { MemGPTGroupChatHandler } from "./MemGPTGroupChatHandler";
 
 export class MemGPTProvider implements IMemGPTProvider {
-  private memGPTProviderUtils: MemGPTProviderUtils;
   private responseTimes: number[];
   private dynamicTimeout: number;
   private firstMessageTracker: { [key: string]: boolean };
 
-  constructor(private dataRepository: IDataRepository) {
-    this.memGPTProviderUtils = new MemGPTProviderUtils();
+  constructor(
+    private dataRepository: IDataRepository,
+    private memGPTGroupChatHandler: MemGPTGroupChatHandler,
+    private memGPTProviderUtils: MemGPTProviderUtils,
+  ) {
     this.responseTimes = [];
     this.dynamicTimeout =
       config.MEMGPT.ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS;
@@ -40,7 +34,53 @@ export class MemGPTProvider implements IMemGPTProvider {
     this.firstMessageTracker = {};
   }
 
-  async handleMessage(
+  handleGroupMessage(
+    res: Response,
+    hasSystemPrompt: boolean,
+    agents: Array<ThaumaturgyAgent>,
+    systemMessageBody: LLMChatRequestMessageBody,
+    userMessageBody: LLMChatRequestMessageBody,
+    originalBody: string,
+    playerUserIncluded: boolean,
+    maxTokens: number,
+  ): Promise<void> {
+    return this.memGPTGroupChatHandler.handle(
+      this,
+      res,
+      hasSystemPrompt,
+      agents,
+      systemMessageBody,
+      userMessageBody,
+      originalBody,
+      playerUserIncluded,
+      maxTokens,
+    );
+  }
+
+  isInGroupConversation(): boolean {
+    return this.memGPTGroupChatHandler.isInGroupConversation();
+  }
+
+  endGroupConversation(
+    //hasSystemPrompt: boolean,
+    //systemMessageBody: LLMChatRequestMessageBody,
+    //userMessageBody: LLMChatRequestMessageBody,
+    originalBody: string,
+    //playerUserIncluded: boolean,
+    //maxTokens: number,
+  ): Promise<void> {
+    return this.memGPTGroupChatHandler.endGroupConversation(
+      //this,
+      //hasSystemPrompt,
+      //systemMessageBody,
+      //userMessageBody,
+      originalBody,
+      //playerUserIncluded,
+      //maxTokens,
+    );
+  }
+
+  async handleOneOnOneMessage(
     res: Response,
     hasSystemPrompt: boolean,
     agentId: string,
@@ -126,10 +166,10 @@ export class MemGPTProvider implements IMemGPTProvider {
       const mad = Utility.calculateMAD(this.responseTimes, medianResponseTime);
 
       // Calculate MAD with scale PLUS recent max
-      this.dynamicTimeout =
-        medianResponseTime +
-        config.MEMGPT.DYNAMIC_RESPONSE_TIME_SCALE * mad +
-        config.MEMGPT.ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS;
+      this.dynamicTimeout = Utility.calculateMADWithScaleAndMax(
+        medianResponseTime,
+        mad,
+      );
       // End Dynamic Response Time
 
       if (responseTime)
@@ -145,83 +185,18 @@ export class MemGPTProvider implements IMemGPTProvider {
         data: Utility.getMockMemGPTResponse(),
       };
 
-      Bootstraper.getAudioPlayer().playSound(
-        `${process.cwd()}/data/sounds/beep-bad.wav`,
-        0.05,
-      );
+      Bootstraper.getAudioPlayer().playErrorBeep();
     }
 
-    let reply = this.processResponseFromMemGPT(response.data);
+    let reply = this.memGPTProviderUtils.processResponseFromMemGPT(
+      response.data,
+      this.dataRepository,
+    );
     console.log("processed reply", reply.choices[0]);
 
     // Stream response to client
     await OpenAIProtocolTransport.streamToClient(res, reply);
     res.end();
-  }
-
-  processResponseFromMemGPT(
-    jsonObj: MemGPTChatResponse,
-  ): LLMChatCompletionResponse {
-    console.log("Response from MemGPT", JSON.stringify(jsonObj));
-
-    let body: LLMChatCompletionResponse = {
-      id: "",
-      object: "chat_completion",
-      created: Math.floor(Date.now() / 1000),
-      model: "Unknown (MemGPT)",
-      choices: [],
-      usage: {
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        total_tokens: 0,
-      },
-    };
-
-    try {
-      for (let msg of jsonObj.messages) {
-        if ((msg as FunctionCallMessage).function_call !== undefined) {
-          let functionCallMessage = msg as FunctionCallMessage;
-
-          if (functionCallMessage.function_call.name == "send_message") {
-            let spoken = JSON.parse(
-              functionCallMessage.function_call.arguments,
-            );
-            if (spoken.message && typeof spoken.message == "string") {
-              body.choices.push(this.createAssistantEndChoice(spoken.message));
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Error processing response from MemGPT", e);
-      throw e;
-    }
-
-    // store response
-    if (jsonObj.messages && jsonObj.messages.length) {
-      this.dataRepository.storeMemGPTResponse(jsonObj.messages);
-    }
-
-    // AI decided not to respond with more dialog.
-    // Inject random acknowledgement so user knows AI is done processing.
-    if (body.choices.length == 0) {
-      body.choices.push(
-        this.createAssistantEndChoice(Utility.randomAcknowledgement()),
-      );
-    }
-
-    // Combine all assistant messages into one if any occured, then replace the list.
-    if (body.choices.length > 1) {
-      let combinedContent = body.choices
-        .reduce((accumulator, current: Choice) => {
-          return accumulator + " " + (current.message as Message).content;
-        }, "")
-        .trim(); // Use trim to remove the leading space
-
-      body.choices = [this.createAssistantEndChoice(combinedContent)];
-    }
-
-    return body;
   }
 
   async createPersonas(bios: Array<ProcessedBio>): Promise<Array<any>> {
@@ -434,16 +409,5 @@ export class MemGPTProvider implements IMemGPTProvider {
     } catch (e) {
       console.error("Error adding to agent archival memory");
     }
-  }
-
-  private createAssistantEndChoice(msg: string) {
-    return {
-      index: 0,
-      message: {
-        role: "assistant",
-        content: msg,
-      },
-      finish_reason: "stop",
-    };
   }
 }

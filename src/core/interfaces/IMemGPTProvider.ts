@@ -2,16 +2,38 @@ import { Response } from "express";
 import { ProcessedBio } from "../Data/Importer/ProcessedBio";
 import { LLMChatRequestMessageBody } from "../Data/OpenAIProtocol/LLMChatRequestMessageBody";
 import { Preset } from "../Entities/Preset";
-import { Agent } from "../Entities/Agent";
+import { Agent, ThaumaturgyAgent } from "../Entities/Agent";
 import { CoreMemoryResponse } from "../Data/MemGPT/CoreMemory";
 
 export interface IMemGPTProvider {
-  handleMessage(
+  handleOneOnOneMessage(
     res: Response,
     hasSystemPrompt: boolean,
     agentId: string,
     systemMessageBody: LLMChatRequestMessageBody,
     userMessageBody: LLMChatRequestMessageBody,
+  ): Promise<void>;
+
+  handleGroupMessage(
+    res: Response,
+    hasSystemPrompt: boolean,
+    agents: Array<ThaumaturgyAgent>,
+    systemMessageBody: LLMChatRequestMessageBody,
+    userMessageBody: LLMChatRequestMessageBody,
+    originalBody: string,
+    playerUserIncluded: boolean,
+    maxTokens: number,
+  ): Promise<void>;
+
+  isInGroupConversation(): boolean;
+
+  endGroupConversation(
+    //hasSystemPrompt: boolean,
+    //systemMessageBody: LLMChatRequestMessageBody,
+    //userMessageBody: LLMChatRequestMessageBody,
+    originalBody: string,
+    //playerUserIncluded: boolean,
+    //maxTokens: number,
   ): Promise<void>;
 
   createPersonas(bios: Array<ProcessedBio>): Promise<Array<any>>;

@@ -13,6 +13,8 @@ import * as config from "config";
 import { temporaryFileRemover } from "./middleware/TempFileRemover";
 import { Bootstraper } from "./Bootstrapper";
 import { SoundPlayAudioPlayer } from "../Infrastructure/SoundPlayAudioPlayer";
+import { MemGPTGroupChatHandler } from "../Infrastructure/MemGPT/MemGPTGroupChatHandler";
+import { MemGPTProviderUtils } from "../Infrastructure/MemGPT/MemGPTProviderUtils";
 
 class Server {
   private app: Application;
@@ -40,7 +42,17 @@ class Server {
     );
     let openAIProtocolLLMProvider = new OpenAIProtocolLLMProvider();
     let thaumaturgyDataRepository = new DataRepository(thaumaturgyDbClient);
-    let memGPTProvider = new MemGPTProvider(thaumaturgyDataRepository);
+    let memGPTProviderUtils = new MemGPTProviderUtils();
+    let memGPTGroupChatHandler = new MemGPTGroupChatHandler(
+      openAIProtocolLLMProvider,
+      thaumaturgyDataRepository,
+    );
+    let memGPTProvider = new MemGPTProvider(
+      thaumaturgyDataRepository,
+      memGPTGroupChatHandler,
+      memGPTProviderUtils,
+    );
+
     let memGPTMod = new MemGPTMod(memGPTDbClient);
 
     // Routes

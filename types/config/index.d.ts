@@ -17,6 +17,10 @@ declare module "config" {
     MEMGPT_SQLITE_DATABASE_PATH: string;
   }
 
+  interface IMemGPTGroupChatConfig {
+    DEFAULT_SYSTEM_PROMPT: string;
+  }
+
   interface IMemGPTConfig {
     BASE_URL: string;
     AUTH_TOKEN: string;
@@ -27,10 +31,12 @@ declare module "config" {
     ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS: number;
     ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_FOR_FIRST_MESSAGE_IN_MS: number;
     MOD: IMemGPTModConfig;
+    GROUP_CHAT: IMemGPTGroupChatConfig;
   }
 
   interface ILLMConfig {
     ENDPOINT: string;
+    FALLBACK_MAX_TOKENS: number;
   }
 
   interface IImporterConfig {

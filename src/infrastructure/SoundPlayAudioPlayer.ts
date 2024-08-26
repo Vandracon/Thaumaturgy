@@ -10,4 +10,16 @@ export class SoundPlayAudioPlayer implements IAudioPlayer {
       console.warn("Can't play audio on this OS");
     }
   }
+
+  playErrorBeep(volume: number = 0.05): void {
+    this.playSound(`${process.cwd()}/data/sounds/beep-bad.wav`, volume);
+  }
+
+  playLLMBeep(volume: number = 0.05): void {
+    this.playSound(`${process.cwd()}/data/sounds/beep-llm.wav`, volume);
+  }
+
+  playNoNPCFoundBeep(volume: number = 0.05): void {
+    this.playSound(`${process.cwd()}/data/sounds/beep-notfound.wav`, volume);
+  }
 }

@@ -1,0 +1,7 @@
+{
+  "MEMGPT": {
+    "MOD": {
+      "MEMGPT_SQLITE_DATABASE_PATH": "MEMGPT_SQLITE_DATABASE_PATH"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { CoreMemory } from "../Data/MemGPT/CoreMemory";
 import { IFunctionSchema } from "./Preset";
 
 export class ThaumaturgyAgent {
@@ -7,6 +8,18 @@ export class ThaumaturgyAgent {
     public initial_persona_header: string,
     public initial_persona: string,
   ) {}
+}
+
+export class ThaumaturgyAgentWithMemGPTCoreMemory extends ThaumaturgyAgent {
+  constructor(
+    id: string,
+    name: string,
+    initial_persona_header: string,
+    initial_persona: string,
+    public coreMemory: CoreMemory,
+  ) {
+    super(id, name, initial_persona_header, initial_persona);
+  }
 }
 
 export class Agent {

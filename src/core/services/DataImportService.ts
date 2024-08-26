@@ -160,7 +160,7 @@ export class DataImportService implements IDataImportService {
         numTries: number = 0,
       ): Promise<string> {
         let newCoreMemoryPersonaLLMResponse =
-          await that.openAIProtocolLLMProvider.chatToLLM(
+          await that.openAIProtocolLLMProvider.simpleUserRequestToLLM(
             "Given this persona and summary, extract your personality from your point of view. Write as if it was describing your character in your own thoughts. " +
               'Avoid starting with "in this description", or "from the text", as its not first person:',
             personaAndSummary,
@@ -201,7 +201,7 @@ export class DataImportService implements IDataImportService {
         numTries: number = 0,
       ): Promise<string> {
         let newCoreMemoryHumanLLMResponse =
-          await that.openAIProtocolLLMProvider.chatToLLM(
+          await that.openAIProtocolLLMProvider.simpleUserRequestToLLM(
             "Given your persona and summary, summarize at length the following text and extract your knowledge of the human/player. You must " +
               "list out facts line by line starting with a hyphen that will be stored in your memory:",
             extractedSummariesData.original,

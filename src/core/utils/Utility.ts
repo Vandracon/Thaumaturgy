@@ -76,4 +76,43 @@ export class Utility {
     const deviations = values.map((value) => Math.abs(value - median));
     return this.calculateMedian(deviations);
   }
+
+  public static calculateMADWithScaleAndMax(
+    medianResponseTime: number,
+    mad: number,
+  ) {
+    return (
+      medianResponseTime +
+      config.MEMGPT.DYNAMIC_RESPONSE_TIME_SCALE * mad +
+      config.MEMGPT.ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS
+    );
+  }
+
+  public static convertStringNameFormatToArrayOfNames(str: string): string[] {
+    // Edge case: if the string is empty, return an empty array
+    if (str === "") {
+      return [];
+    }
+
+    // Split the string by the ' and ' delimiter first
+    let parts = str.split(" and ");
+
+    // If there are more than two parts, handle it correctly
+    if (parts.length > 2) {
+      const lastPart = parts.pop()!;
+      const joinedPart = parts.join(" and ");
+      parts = [joinedPart, lastPart];
+    }
+
+    // If there's only one part after splitting, return the single element array
+    if (parts.length === 1) {
+      return parts;
+    }
+
+    // If there are exactly two parts, further split the first part by comma and trim whitespace
+    let firstParts = parts[0].split(", ").map((part) => part.trim());
+    firstParts.push(parts[1].trim());
+
+    return firstParts;
+  }
 }
