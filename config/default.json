@@ -1,4 +1,10 @@
 {
+  "THAUMATURGY": {
+    "DOMAIN": "skyrim",
+    "HUMAN_STARTER_MEMORY": "An adventurer in skyrim",
+    "UNKNOWN_AGENT_CREATION_PERSONA": "I am a character in skyrim"
+  },
+
   "MEMGPT": {
     "BASE_URL": "http://localhost:8283",
     "AUTH_TOKEN": "password",
@@ -40,8 +46,14 @@
     "FILE_PROCESSED_PERSONAS": "processed_personas.json",
     "FILE_USER_CREATE_RESPONSE": "user_create_response.json",
     "FILE_CREATE_PRESET_RESPONSE": "create_preset_response.json",
-    "FILE_SYSTEM_PROMPT": "system_prompt.txt",
+    "FILE_SYSTEM_PROMPT": "custom_skyrim_prompt-latest.txt",
     "MAX_TRIES_BIO_SUMMARY": 50,
     "MAX_TRIES_MEMORY_IMPORT": 50
+  },
+
+  "MISC": {
+    "MANTELLA": {
+      "CHARACTERS_CSV_PATH": "skyrim_characters.csv"
+    }
   }
 }

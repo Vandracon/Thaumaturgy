@@ -3,5 +3,10 @@
     "MOD": {
       "MEMGPT_SQLITE_DATABASE_PATH": "MEMGPT_SQLITE_DATABASE_PATH"
     }
+  },
+  "MISC": {
+    "MANTELLA": {
+      "CHARACTERS_CSV_PATH": "CHARACTERS_CSV_PATH"
+    }
   }
 }

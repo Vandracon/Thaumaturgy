@@ -198,4 +198,40 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
       summaries: results,
     };
   }
+
+  async getProcessedBioFromCharactersCSVData(
+    uid: string,
+  ): Promise<ProcessedBio | null> {
+    try {
+      let path = `${process.cwd()}/local/instance/${config.MISC.MANTELLA.CHARACTERS_CSV_PATH}`;
+      let rows = await new Promise<any>((resolve, reject) => {
+        let x: Array<any> = [];
+
+        if (fs.existsSync(path)) {
+          fs.createReadStream(path)
+            .pipe(csv())
+            .on("data", (data) => x.push(data))
+            .on("error", (error) => reject(error))
+            .on("end", () => {
+              resolve(x);
+            });
+        } else reject();
+      });
+
+      if (rows && rows.length) {
+        for (let row of rows) {
+          var keys = Object.keys(row);
+          var name = row[keys[0]];
+
+          if (name == uid) {
+            return await this.processRow(row, 0, 10, `I exist in Skyrim.`);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("There was no characters csv file provided");
+    }
+
+    return null;
+  }
 }

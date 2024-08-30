@@ -15,6 +15,7 @@ import { Bootstraper } from "./Bootstrapper";
 import { SoundPlayAudioPlayer } from "../Infrastructure/SoundPlayAudioPlayer";
 import { MemGPTGroupChatHandler } from "../Infrastructure/MemGPT/MemGPTGroupChatHandler";
 import { MemGPTProviderUtils } from "../Infrastructure/MemGPT/MemGPTProviderUtils";
+import { MantellaImportFileProcessor } from "../Infrastructure/Importer/MantellaImportFileProcessor";
 
 class Server {
   private app: Application;
@@ -62,6 +63,7 @@ class Server {
       openAIProtocolLLMProvider,
       memGPTProvider,
       thaumaturgyDataRepository,
+      new MantellaImportFileProcessor(openAIProtocolLLMProvider),
     );
     new DataImportRouter(
       this.app,

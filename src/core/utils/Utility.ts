@@ -1,5 +1,6 @@
 import { Message } from "../Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 import * as config from "config";
+import * as fs from "fs";
 
 export class Utility {
   public static generateChatChunkId() {
@@ -114,5 +115,12 @@ export class Utility {
     firstParts.push(parts[1].trim());
 
     return firstParts;
+  }
+
+  public static getSystemPromptSync(): string {
+    return fs.readFileSync(
+      `${process.cwd()}/data/domain/${config.THAUMATURGY.DOMAIN}/${config.IMPORTER.FILE_SYSTEM_PROMPT}`,
+      "utf8",
+    );
   }
 }

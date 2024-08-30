@@ -1,6 +1,12 @@
 // types/config/index.d.ts
 
 declare module "config" {
+  interface IThaumaturgyConfig {
+    DOMAIN: string;
+    HUMAN_STARTER_MEMORY: string;
+    UNKNOWN_AGENT_CREATION_PERSONA: string;
+  }
+
   interface IMemGPTEndpointsConfig {
     AUTH: string;
     PERSONAS: string;
@@ -48,7 +54,17 @@ declare module "config" {
     MAX_TRIES_MEMORY_IMPORT: number;
   }
 
+  interface IMiscConfig {
+    MANTELLA: IMiscMantellaConfig;
+  }
+
+  interface IMiscMantellaConfig {
+    CHARACTERS_CSV_PATH: string;
+  }
+
+  export const THAUMATURGY: IThaumaturgyConfig;
   export const MEMGPT: IMemGPTConfig;
   export const LLM: ILLMConfig;
   export const IMPORTER: IImporterConfig;
+  export const MISC: IMiscConfig;
 }

@@ -10,4 +10,8 @@ export interface IDataImportFileProcessor {
   ): Promise<Array<ProcessedBio>>;
 
   extractSummariesFromFile(file: Express.Multer.File): ExtractSummariesData;
+
+  getProcessedBioFromCharactersCSVData(
+    uid: string,
+  ): Promise<ProcessedBio | null>;
 }

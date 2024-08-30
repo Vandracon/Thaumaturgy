@@ -3,7 +3,7 @@ import { IOpenAIProtocolService } from "../Interfaces/IOpenAIProtocolService";
 import { IOpenAIProtocolLLMProvider } from "../Interfaces/IOpenAIProtocolLLMProvider";
 import { IMemGPTProvider } from "../Interfaces/IMemGPTProvider";
 import { IDataRepository } from "../Interfaces/IDataRepository";
-import { ThaumaturgyAgent } from "../Entities/Agent";
+import { Agent, ThaumaturgyAgent } from "../Entities/Agent";
 import { LLMChatRequestMessageBody } from "../Data/OpenAIProtocol/LLMChatRequestMessageBody";
 import { Validator } from "../Validators/Validator";
 import { performance } from "perf_hooks";
@@ -11,12 +11,14 @@ import { Bootstraper } from "../../Server/Bootstrapper";
 import { IThaumicRequest, ThaumicIntent } from "../Data/ThaumicRequest";
 import { Utility } from "../Utils/Utility";
 import * as config from "config";
+import { IDataImportFileProcessor } from "../Interfaces/Importer/IDataImportFileProcessor";
 
 export class OpenAIProtocolService implements IOpenAIProtocolService {
   constructor(
     private openAIProtocolLLMProvider: IOpenAIProtocolLLMProvider,
     private memGPTProvider: IMemGPTProvider,
     private dataRepository: IDataRepository,
+    private dataImportFileProcessor: IDataImportFileProcessor,
   ) {}
 
   async handleMessage(req: Request, res: Response): Promise<void> {
@@ -183,16 +185,103 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
         let tAgentRes = await this.dataRepository.getAgentByName(uid);
 
         if (tAgentRes.length == 0) {
-          if (index === msgData.uids.length - 1) {
-            // If it could not be found and is last index. Likely it is the named player.
+          if (index === msgData.uids.length - 1 && msgData.uids.length > 1) {
+            // If it could not be found and is last index of a list of more than 1 npc target to speak to... Likely it is the named player.
             playerUserIncluded = true;
             continue;
           }
 
-          console.warn(`Could not find NPC by the name of ${uid}`);
-          Bootstraper.getAudioPlayer().playNoNPCFoundBeep();
-          fails++;
-          continue;
+          console.warn(
+            `Could not find NPC by the name of ${uid}. Checking fallback methods`,
+          );
+
+          //#region Create new NPC from characters file
+          let processedBio = null;
+
+          try {
+            processedBio =
+              await this.dataImportFileProcessor.getProcessedBioFromCharactersCSVData(
+                uid,
+              );
+          } catch (e) {
+            console.warn(
+              "The agent to create will be basic with no specific personality to start with.",
+            );
+          }
+
+          if (processedBio) {
+            let agent = new Agent(
+              processedBio.name,
+              `${config.THAUMATURGY.DOMAIN}_character`,
+              `${config.THAUMATURGY.HUMAN_STARTER_MEMORY}`,
+              processedBio.name,
+              processedBio.persona_header + processedBio.persona,
+              "",
+              config.MEMGPT.FUNCTIONS_SCHEMA,
+            );
+
+            let systemPrompt = Utility.getSystemPromptSync();
+
+            let createAgentResponses = await this.memGPTProvider.createAgents(
+              [agent],
+              systemPrompt,
+            );
+
+            await this.dataRepository.saveCreatedAgentsAnalytics(
+              createAgentResponses,
+            );
+
+            tAgentRes = [
+              new ThaumaturgyAgent(
+                createAgentResponses[0].agent_state.id,
+                createAgentResponses[0].agent_state.name,
+                processedBio.persona_header,
+                processedBio.persona,
+              ),
+            ];
+            //#endregion
+          } else {
+            //#region Fallback to create basic agent as last resort
+            console.warn(
+              `Unable to create agent from characters CSV, creating agent with basic info`,
+            );
+
+            let agent = new Agent(
+              uid,
+              `${config.THAUMATURGY.DOMAIN}_character`,
+              `${config.THAUMATURGY.HUMAN_STARTER_MEMORY}`,
+              "memgpt_starter",
+              config.THAUMATURGY.UNKNOWN_AGENT_CREATION_PERSONA,
+              "",
+              config.MEMGPT.FUNCTIONS_SCHEMA,
+            );
+
+            let systemPrompt = Utility.getSystemPromptSync();
+
+            let createAgentResponses = await this.memGPTProvider.createAgents(
+              [agent],
+              systemPrompt,
+            );
+
+            tAgentRes = [
+              new ThaumaturgyAgent(
+                createAgentResponses[0].agent_state.id,
+                createAgentResponses[0].agent_state.name,
+                "",
+                config.THAUMATURGY.UNKNOWN_AGENT_CREATION_PERSONA,
+              ),
+            ];
+            //#endregion
+          }
+
+          // Agent was made successfully
+          if (tAgentRes.length) {
+            await this.dataRepository.saveCreatedAgentsToDatabase(tAgentRes);
+          } else {
+            Bootstraper.getAudioPlayer().playNoNPCFoundBeep(); // todo: need to not beep or make a diff beep if it made a new agent
+            fails++;
+            continue;
+          }
         }
         if (tAgentRes.length > 1) {
           console.warn(

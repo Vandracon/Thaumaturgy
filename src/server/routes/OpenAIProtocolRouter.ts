@@ -4,6 +4,7 @@ import { BaseRouter } from "./BaseRouter";
 import { IOpenAIProtocolLLMProvider } from "../../Core/Interfaces/IOpenAIProtocolLLMProvider";
 import { IMemGPTProvider } from "../../Core/Interfaces/IMemGPTProvider";
 import { IDataRepository } from "../../Core/Interfaces/IDataRepository";
+import { IDataImportFileProcessor } from "../../Core/Interfaces/Importer/IDataImportFileProcessor";
 
 export class OpenAIProtocolRouter extends BaseRouter {
   private openAIProtocolService: OpenAIProtocolService;
@@ -13,6 +14,7 @@ export class OpenAIProtocolRouter extends BaseRouter {
     private openAIProtocolLLMProvider: IOpenAIProtocolLLMProvider,
     private memGPTProvider: IMemGPTProvider,
     private dataRepository: IDataRepository,
+    private dataImportFileProcessor: IDataImportFileProcessor,
   ) {
     super();
     this.setupRoutes();
@@ -21,6 +23,7 @@ export class OpenAIProtocolRouter extends BaseRouter {
       this.openAIProtocolLLMProvider,
       this.memGPTProvider,
       this.dataRepository,
+      this.dataImportFileProcessor,
     );
   }
 

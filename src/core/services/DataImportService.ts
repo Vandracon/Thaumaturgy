@@ -9,7 +9,7 @@ import { IDataRepository } from "../Interfaces/IDataRepository";
 import { ImportMemoriesData } from "../Data/Importer/ImportMemoriesData";
 import { IOpenAIProtocolLLMProvider } from "../Interfaces/IOpenAIProtocolLLMProvider";
 import { Message } from "../Data/OpenAIProtocol/LLMChatCompletionRequestBody";
-import fs from "fs";
+import { Utility } from "../Utils/Utility";
 
 export class DataImportService implements IDataImportService {
   constructor(
@@ -63,10 +63,7 @@ export class DataImportService implements IDataImportService {
     //   ),
     // );
 
-    let systemPrompt = fs.readFileSync(
-      `${process.cwd()}/data/domain/${domain}/${config.IMPORTER.FILE_SYSTEM_PROMPT}`,
-      "utf8",
-    );
+    let systemPrompt = Utility.getSystemPromptSync();
 
     console.log(
       `System prompt length: ${systemPrompt.length} \n\n${systemPrompt}`,
