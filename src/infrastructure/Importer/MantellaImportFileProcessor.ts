@@ -203,7 +203,7 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
     uid: string,
   ): Promise<ProcessedBio | null> {
     try {
-      let path = `${process.cwd()}/local/instance/${config.MISC.MANTELLA.CHARACTERS_CSV_PATH}`;
+      let path = `${process.cwd()}/${config.MISC.MANTELLA.CHARACTERS_CSV_PATH}`;
       let rows = await new Promise<any>((resolve, reject) => {
         let x: Array<any> = [];
 

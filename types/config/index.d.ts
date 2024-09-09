@@ -2,6 +2,7 @@
 
 declare module "config" {
   interface IThaumaturgyConfig {
+    VERSION: string;
     DOMAIN: string;
     HUMAN_STARTER_MEMORY: string;
     UNKNOWN_AGENT_CREATION_PERSONA: string;

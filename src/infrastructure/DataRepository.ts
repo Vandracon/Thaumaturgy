@@ -14,10 +14,6 @@ export class DataRepository implements IDataRepository {
   async saveCreatedPersonasAnalytics(
     personaCreateResponses: Array<any>,
   ): Promise<void> {
-    await this.dbClient.createDebugTable(
-      `CREATE TABLE IF NOT EXISTS created_personas(id INTEGER PRIMARY KEY AUTOINCREMENT, json TEXT)`,
-    );
-
     const placeholders = personaCreateResponses.map(() => "(?)").join(", ");
     const values = personaCreateResponses.reduce(
       (acc, cur) => [...acc, JSON.stringify(cur)],
@@ -29,10 +25,6 @@ export class DataRepository implements IDataRepository {
   }
 
   async saveCreatedAgentsAnalytics(createdAgentsResponses: Array<any>) {
-    await this.dbClient.createDebugTable(
-      `CREATE TABLE IF NOT EXISTS created_agents(id INTEGER PRIMARY KEY AUTOINCREMENT, json TEXT)`,
-    );
-
     const placeholders = createdAgentsResponses.map(() => "(?)").join(", ");
     const values = createdAgentsResponses.reduce(
       (acc, cur) => [...acc, JSON.stringify(cur)],
@@ -46,10 +38,6 @@ export class DataRepository implements IDataRepository {
   async saveCreatedAgentsToDatabase(
     agents: Array<ThaumaturgyAgent>,
   ): Promise<void> {
-    await this.dbClient.createTable(
-      "CREATE TABLE IF NOT EXISTS agents(id TEXT PRIMARY KEY, name TEXT, initial_persona_header TEXT, initial_persona TEXT)",
-    );
-
     let insert: any = [];
     for (let agent of agents) {
       insert.push({
@@ -78,10 +66,6 @@ export class DataRepository implements IDataRepository {
   }
 
   async storeMemGPTResponse(data: Array<any>): Promise<void> {
-    await this.dbClient.createTable(
-      "CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT, message_id INTEGER, json TEXT)",
-    );
-
     let lastMessageIdQueryResponse = await this.dbClient.selectData(
       `SELECT MAX(message_id) AS lastMsgId FROM messages;`,
       [],

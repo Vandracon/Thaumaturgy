@@ -1,7 +1,7 @@
 services:
   memgpt_server:
     container_name: MEMGPT
-    image: vandracon/thaumaturgy/memgpt:0.3.25
+    image: vandracon/thaumaturgy/memgpt:1.0.0
     hostname: memgpt-server
     env_file:
       - ./local/instance/memgpt/.env
@@ -30,7 +30,7 @@ services:
     depends_on:
       memgpt_server:
         condition: service_healthy
-    #privileged: true
+    privileged: true
     build:
       context: .
       dockerfile: Dockerfile

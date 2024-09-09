@@ -3,6 +3,7 @@ config/dev.json
 local
 node_modules
 src
+templates
 tmp
 types
 .dockerignore

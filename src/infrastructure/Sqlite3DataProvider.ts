@@ -8,12 +8,14 @@ export class Sqlite3DataProvider implements IDatabaseClient {
   constructor(
     private dbPath: string,
     private debugDbPath: string | undefined,
+    migrate: boolean = false,
   ) {
     this.db = new sqlite3.Database(this.dbPath, (err) => {
       if (err) {
         return console.error(err.message);
       }
       console.log(`Connected to SQlite (${this.dbPath}) database.`);
+      if (migrate) this.runMigrations();
     });
 
     if (this.debugDbPath) {
@@ -21,7 +23,10 @@ export class Sqlite3DataProvider implements IDatabaseClient {
         if (err) {
           return console.error(err.message);
         }
-        console.log(`Connected to debug SQlite (${this.dbPath}) database.`);
+        console.log(
+          `Connected to debug SQlite (${this.debugDbPath}) database.`,
+        );
+        if (migrate) this.runDebugMigrations();
       });
     }
   }
@@ -32,7 +37,6 @@ export class Sqlite3DataProvider implements IDatabaseClient {
         if (err) {
           reject(err);
         }
-        console.log("Table created.");
         resolve();
       });
     });
@@ -45,7 +49,6 @@ export class Sqlite3DataProvider implements IDatabaseClient {
         if (err) {
           reject(err);
         }
-        console.log("Table created.");
         resolve();
       });
     });
@@ -97,5 +100,29 @@ export class Sqlite3DataProvider implements IDatabaseClient {
       }
       console.log("Close the database connection.");
     });
+  }
+
+  private async runMigrations() {
+    await this.createTable(
+      "CREATE TABLE IF NOT EXISTS agents(id TEXT PRIMARY KEY, name TEXT, initial_persona_header TEXT, initial_persona TEXT)",
+    );
+
+    await this.createTable(
+      "CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT, message_id INTEGER, json TEXT)",
+    );
+
+    console.log("Main DB Migrations Complete");
+  }
+
+  private async runDebugMigrations() {
+    await this.createDebugTable(
+      `CREATE TABLE IF NOT EXISTS created_personas(id INTEGER PRIMARY KEY AUTOINCREMENT, json TEXT)`,
+    );
+
+    await this.createDebugTable(
+      `CREATE TABLE IF NOT EXISTS created_agents(id INTEGER PRIMARY KEY AUTOINCREMENT, json TEXT)`,
+    );
+
+    console.log("Debug DB Migrations Complete");
   }
 }

@@ -36,6 +36,7 @@ class Server {
     let thaumaturgyDbClient = new Sqlite3DataProvider(
       process.cwd() + "/local/thaumaturgy.db",
       process.cwd() + "/local/thaumaturgydebug.db",
+      true,
     );
     let memGPTDbClient = new Sqlite3DataProvider(
       config.MEMGPT.MOD.MEMGPT_SQLITE_DATABASE_PATH,
@@ -78,7 +79,9 @@ class Server {
 
   private start() {
     this.app.listen(this.port, () => {
-      console.log(`Server is running on http://0.0.0.0:${this.port}`);
+      console.log(
+        `Thaumaturgy v${config.THAUMATURGY.VERSION} is now running on http://0.0.0.0:${this.port}`,
+      );
     });
   }
 }
