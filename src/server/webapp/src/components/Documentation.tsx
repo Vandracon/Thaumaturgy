@@ -7,15 +7,16 @@ const Documentation: React.FC<DocumentationProps> = () => {
   return (
     <div className="documentation-container">
       <h1 className="documentation-title">Documentation</h1>
-      <span className="documentation-description">
+      <p className="documentation-description">
         Available Intents: 1 = One on One, 2 = Group Conversation, 3 = Summarize
-      </span>
+      </p>
       <span className="documentation-description">
         Helpful Info:
-        <ul>
-          <li>Latest Tested LM Studio Version 0.2.31</li>
-          <li>Latest Tested KoboldCpp Version 1.75.2</li>
-        </ul>
+        <li>
+          Latest Tested LM Studio Version 0.2.31 (newer releases made a breaking
+          change)
+        </li>
+        <li>Latest Tested KoboldCpp Version 1.75.2</li>
       </span>
     </div>
   );

@@ -12,10 +12,7 @@ const GettingStarted: React.FC<GettingStartedProps> = () => {
         <br />
         <br />
         To begin, go to <a href="/llm-config">LLM Config</a> and setup the LLM
-        that you will be using. Once it is set, you should restart the server
-        for MemGPT to save the changes. If you chatted with any agents, restart
-        this service first so any loaded agents wont re-save their old config on
-        shutdown.
+        that you will be using.
       </span>
       <hr />
       <br />
@@ -25,26 +22,24 @@ const GettingStarted: React.FC<GettingStartedProps> = () => {
         <br />
         If you’re planning to import characters, it’s best to do this now. Since
         the import process can take some time (depending on the number of
-        characters), creating a backup of the imported data allows you to reuse
-        it across different environments, game saves, and users without having
-        to run import again.
+        characters), creating a backup of the imported data (when finished)
+        allows you to reuse it across different environments, game saves, and
+        users without having to run import again.
       </span>
       <p className="getting-started-description">
         The <b>csv</b> file should contain at least the following columns:
-        <ul>
-          <li>
-            <b>race</b>
-          </li>
-          <li>
-            <b>gender</b>
-          </li>
-          <li>
-            <b>species</b>
-          </li>
-          <li>
-            <b>bio</b>
-          </li>
-        </ul>
+        <li>
+          <b>race</b>
+        </li>
+        <li>
+          <b>gender</b>
+        </li>
+        <li>
+          <b>species</b>
+        </li>
+        <li>
+          <b>bio</b>
+        </li>
         Go to the{" "}
         <a href="/import-characters" className="link-highlight">
           Import Characters
@@ -87,7 +82,10 @@ const GettingStarted: React.FC<GettingStartedProps> = () => {
       <hr />
       <br />
       <span className="getting-started-description">
-        Available Intents: 1 = One on One, 2 = Group Conversation, 3 = Summarize
+        Step Four: Refer to <a href="/docs">Documentation</a> for more
+        information.
+        <br />
+        <br />
       </span>
     </div>
   );
