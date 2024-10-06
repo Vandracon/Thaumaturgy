@@ -8,6 +8,7 @@ import { IOpenAIProtocolLLMProvider } from "../../Core/Interfaces/IOpenAIProtoco
 import { ImportDomainData } from "../../Core/Data/Importer/ImportDomainData";
 import { IMemGPTProvider } from "../../Core/Interfaces/IMemGPTProvider";
 import { IDataRepository } from "../../Core/Interfaces/IDataRepository";
+import { Utility } from "../../Core/Utils/Utility";
 
 export class DataImportRouter extends BaseRouter {
   private controller: DataImportController;
@@ -47,7 +48,8 @@ export class DataImportRouter extends BaseRouter {
             return;
           }
 
-          await this.controller.importDomainData(
+          // Don't await. Just return success and let the long running process happen on its own. Can poll status if needed.
+          this.controller.importDomainData(
             req.file as Express.Multer.File,
             req.body as ImportDomainData,
           );
@@ -80,6 +82,19 @@ export class DataImportRouter extends BaseRouter {
           );
 
           res.send({ data: {} });
+        } catch (e: any) {
+          res
+            .status(HttpStatusCode.InternalServerError)
+            .send({ data: { error: e.message } });
+        }
+      },
+    );
+
+    this.app.get(
+      this.buildEndpoint("import/status"),
+      async (req: Request, res: Response) => {
+        try {
+          res.send({ data: Utility.LastImportStatusUpdate });
         } catch (e: any) {
           res
             .status(HttpStatusCode.InternalServerError)

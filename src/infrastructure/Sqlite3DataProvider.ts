@@ -85,9 +85,6 @@ export class Sqlite3DataProvider implements IDatabaseClient {
         if (err) {
           reject(err);
         }
-        rows.forEach((row: any) => {
-          console.log(row.message);
-        });
         resolve(rows);
       });
     });

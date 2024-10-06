@@ -31,11 +31,16 @@
     "ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_IN_MS": 23000,
     "ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_FOR_FIRST_MESSAGE_IN_MS": 15000,
     "MOD": {
-      "MEMGPT_SQLITE_DATABASE_PATH": ""
+      "MEMGPT_SQLITE_DATABASE_PATH": "",
+      "MEMGPT_CONFIG_PATH": ""
     },
     "GROUP_CHAT": {
       "DEFAULT_SYSTEM_PROMPT": "You are now in a group chat with multiple users. The human user you normally talk to will provide you a summary of the conversation when completed."
     }
+  },
+
+  "SYSTEM": {
+    "MEMGPT_CONTAINER_NAME": "MEMGPT"
   },
 
   "LLM": {

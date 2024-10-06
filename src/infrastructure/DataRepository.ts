@@ -1,3 +1,4 @@
+import { GetAgentsResponse } from "../Core/Data/Agents/GetAgentsResponse";
 import { ThaumaturgyAgent } from "../Core/Entities/Agent";
 import { IDatabaseClient } from "../Core/Interfaces/IDatabaseClient";
 import { IDataRepository } from "../Core/Interfaces/IDataRepository";
@@ -9,6 +10,27 @@ export class DataRepository implements IDataRepository {
     return this.dbClient.selectData(`SELECT * FROM agents WHERE name = ?`, [
       name,
     ]);
+  }
+
+  async getAgents(page: number, pageSize: number): Promise<GetAgentsResponse> {
+    let agents = await this.dbClient.selectData(
+      `SELECT * FROM agents ORDER BY name LIMIT ? OFFSET ?`,
+      [pageSize, (page - 1) * pageSize],
+    );
+
+    let totalCount = 0;
+    const result = await this.dbClient.selectData(
+      `SELECT COUNT(*) as totalCount FROM agents`,
+      [],
+    );
+    if (result && result.length > 0) {
+      totalCount = result[0].totalCount;
+    }
+
+    return {
+      agents,
+      totalCount,
+    };
   }
 
   async saveCreatedPersonasAnalytics(

@@ -1,0 +1,96 @@
+/* Styles for the Bulk Import page */
+.config-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.config-container h1 {
+  font-size: 24px;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.config-container p {
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.config-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.config-container label {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.config-container input[type="text"],
+.config-container input[type="file"],
+.config-container input[type="checkbox"] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.config-container input[type="checkbox"] {
+  width: auto;
+  margin-left: 10px;
+}
+
+.config-container button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.config-container button:hover {
+  background-color: #0056b3;
+}
+
+.config-container .checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast-container {
+  margin-top: 20px;
+}
+
+.progress-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.progress-modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 400px;
+  height: 14em;
+  text-align: center;
+}

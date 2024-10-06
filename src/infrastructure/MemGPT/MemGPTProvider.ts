@@ -14,6 +14,7 @@ import { CoreMemoryResponse } from "../../Core/Data/MemGPT/CoreMemory";
 import { Bootstraper } from "../../Server/Bootstrapper";
 import { MemGPTProviderUtils } from "./MemGPTProviderUtils";
 import { MemGPTGroupChatHandler } from "./MemGPTGroupChatHandler";
+import { ChatHistory } from "../../Core/Data/Agents/ChatHistoryRequest";
 
 export class MemGPTProvider implements IMemGPTProvider {
   private responseTimes: number[];
@@ -311,7 +312,9 @@ export class MemGPTProvider implements IMemGPTProvider {
     let responses: Array<any> = [];
 
     for (let agent of agents) {
-      console.log(`Creating agent ${i + 1} of ${agents.length}`);
+      let log = `Creating agent ${i + 1} of ${agents.length}`;
+      console.log(log);
+      Utility.LastImportStatusUpdate = log;
       i++;
 
       var body: any = {
@@ -409,5 +412,45 @@ export class MemGPTProvider implements IMemGPTProvider {
     } catch (e) {
       console.error("Error adding to agent archival memory");
     }
+  }
+
+  async sendNonStreamingMessage(
+    agentId: string,
+    message: string,
+  ): Promise<any> {
+    let response = await axios.post(
+      `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/messages`,
+      {
+        message,
+        role: "user",
+        stream_steps: false,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config.MEMGPT.AUTH_TOKEN}`,
+        },
+      },
+    );
+
+    return response.data;
+  }
+
+  async getChatHistory(
+    agentId: string,
+    start: number,
+    count: number,
+  ): Promise<ChatHistory> {
+    let response = await axios.get(
+      `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/messages?start=${start}&count=${count}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config.MEMGPT.AUTH_TOKEN}`,
+        },
+      },
+    );
+
+    return response.data;
   }
 }

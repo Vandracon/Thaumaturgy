@@ -22,6 +22,7 @@ declare module "config" {
 
   interface IMemGPTModConfig {
     MEMGPT_SQLITE_DATABASE_PATH: string;
+    MEMGPT_CONFIG_PATH: string;
   }
 
   interface IMemGPTGroupChatConfig {
@@ -39,6 +40,10 @@ declare module "config" {
     ADDITIONAL_DYNAMIC_RESPONSE_TIMEOUT_FOR_FIRST_MESSAGE_IN_MS: number;
     MOD: IMemGPTModConfig;
     GROUP_CHAT: IMemGPTGroupChatConfig;
+  }
+
+  interface ISystemConfig {
+    MEMGPT_CONTAINER_NAME: string;
   }
 
   interface ILLMConfig {
@@ -65,6 +70,7 @@ declare module "config" {
 
   export const THAUMATURGY: IThaumaturgyConfig;
   export const MEMGPT: IMemGPTConfig;
+  export const SYSTEM: ISystemConfig;
   export const LLM: ILLMConfig;
   export const IMPORTER: IImporterConfig;
   export const MISC: IMiscConfig;

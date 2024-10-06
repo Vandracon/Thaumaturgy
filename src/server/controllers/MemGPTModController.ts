@@ -1,3 +1,5 @@
+import { GetAllAgentsMemGPTLLMConfig } from "../../Core/Data/MemGPT/Mod/GetAllAgentsMemGPTLLMConfig";
+import { GetAllAgentsBaseSystemResponse } from "../../Core/Data/MemGPT/Mod/GetAllAgentsSystemPromptResponse";
 import { UpdateAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAgentLLMConfig";
 import { UpdateAgentSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAgentSystemPromptData";
 import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
@@ -21,6 +23,10 @@ export class MemGPTModController {
     await this.service.updateAllAgentsLLMConfig(data);
   }
 
+  getAllAgentsLLMConfig(): GetAllAgentsMemGPTLLMConfig {
+    return this.service.getAllAgentsLLMConfig();
+  }
+
   async updateAgentBaseSystemPrompt(data: UpdateAgentSystemPromptData) {
     await this.service.updateAgentBaseSystemPrompt(
       data.agent_id,
@@ -30,5 +36,9 @@ export class MemGPTModController {
 
   async updateAllAgentsBaseSystemPrompt(data: UpdateAllAgentsSystemPromptData) {
     await this.service.updateAllAgentsBaseSystemPrompt(data.new_prompt);
+  }
+
+  getAllAgentsBaseSystemPrompt(): GetAllAgentsBaseSystemResponse {
+    return this.service.getAllAgentsBaseSystemPrompt();
   }
 }

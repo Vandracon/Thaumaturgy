@@ -68,9 +68,12 @@ export class DataImportValidator extends BaseValidator {
   ): ValidationResult {
     let validationReasons: Array<string> = [];
 
-    if (!file) validationReasons.push(`File not provided`);
-    else if (!fs.existsSync(file.path))
-      validationReasons.push(`Uploaded file was not found. Internal Error`);
+    if (!file) {
+      if (!data.override_summaries_generation)
+        validationReasons.push(`File not provided`);
+    } else if (!fs.existsSync(file?.path))
+      if (!data.override_summaries_generation)
+        validationReasons.push(`Uploaded file was not found. Internal Error`);
 
     if (!data.character_name)
       validationReasons.push(`No character_name provided`);

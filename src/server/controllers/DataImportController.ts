@@ -6,9 +6,10 @@ import { ImportDomainData } from "../../Core/Data/Importer/ImportDomainData";
 import { IMemGPTProvider } from "../../Core/Interfaces/IMemGPTProvider";
 import { IDataRepository } from "../../Core/Interfaces/IDataRepository";
 import { ImportMemoriesData } from "../../Core/Data/Importer/ImportMemoriesData";
+import { IDataImportService } from "../../Core/Interfaces/Importer/IDataImportService";
 
 export class DataImportController {
-  private service: DataImportService;
+  private service: IDataImportService;
 
   constructor(
     private llmProvider: IOpenAIProtocolLLMProvider,

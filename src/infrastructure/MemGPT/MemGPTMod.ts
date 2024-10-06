@@ -1,5 +1,7 @@
+import { GetAgentDetailsResponse } from "../../Core/Data/MemGPT/GetAgentDetailsResponse";
 import { LLMConfig } from "../../Core/Data/MemGPT/Mod/LLMConfig";
 import { IDatabaseClient } from "../../Core/Interfaces/IDatabaseClient";
+import { Utility } from "../../Core/Utils/Utility";
 
 export interface IMemGPTMod {
   updateAgentLLMSettings(agentId: string, config: LLMConfig): Promise<void>;
@@ -9,6 +11,7 @@ export interface IMemGPTMod {
     newPrompt: string,
   ): Promise<void>;
   updateAllAgentsBaseSystemPrompt(newPrompt: string): Promise<void>;
+  getAgentDetails(id: string): Promise<GetAgentDetailsResponse | null>;
 }
 
 /*
@@ -84,6 +87,8 @@ export class MemGPTMod implements IMemGPTMod {
       let sql = `UPDATE agents SET llm_config = json_set(llm_config, '$.context_window', ?)`;
       await this.dbClient.insertData(sql, [config.context_window]);
     }
+
+    Utility.updateMemGPTLLMConfig(config);
   }
 
   async updateAgentBaseSystemPrompt(agentId: string, newPrompt: string) {
@@ -100,5 +105,17 @@ export class MemGPTMod implements IMemGPTMod {
 
     sql = `UPDATE agents SET state = json_set(state, '$.system', ?)`;
     await this.dbClient.insertData(sql, [newPrompt]);
+
+    Utility.setSystemPromptSync(newPrompt);
+  }
+
+  async getAgentDetails(id: string): Promise<GetAgentDetailsResponse | null> {
+    let sql = `SELECT state FROM agents WHERE id = ?`;
+    let data = await this.dbClient.selectData(sql, [id]);
+
+    if (data && data.length) {
+      return data[0];
+    }
+    return null;
   }
 }

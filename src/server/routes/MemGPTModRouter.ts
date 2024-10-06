@@ -72,6 +72,20 @@ export class MemGPTModRouter extends BaseRouter {
       },
     );
 
+    this.app.get(
+      this.buildEndpoint("mod/agents/llmconfig"),
+      async (req: Request, res: Response) => {
+        try {
+          let data = await this.controller.getAllAgentsLLMConfig();
+          res.json(data);
+        } catch (e: any) {
+          res
+            .status(HttpStatusCode.InternalServerError)
+            .json({ data: { error: e.message } });
+        }
+      },
+    );
+
     this.app.post(
       this.buildEndpoint("mod/agent/system"),
       async (req: Request, res: Response) => {
@@ -113,6 +127,21 @@ export class MemGPTModRouter extends BaseRouter {
 
           res.json({ data: {} });
         } catch (e: any) {
+          res
+            .status(HttpStatusCode.InternalServerError)
+            .json({ data: { error: e.message } });
+        }
+      },
+    );
+
+    this.app.get(
+      this.buildEndpoint("mod/agents/system"),
+      async (req: Request, res: Response) => {
+        try {
+          let data = this.controller.getAllAgentsBaseSystemPrompt();
+          res.json(data);
+        } catch (e: any) {
+          console.log("some things broke", e);
           res
             .status(HttpStatusCode.InternalServerError)
             .json({ data: { error: e.message } });

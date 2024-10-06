@@ -6,6 +6,7 @@ import * as config from "config";
 import { IOpenAIProtocolLLMProvider } from "../../Core/Interfaces/IOpenAIProtocolLLMProvider";
 import { Message } from "../../Core/Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 import { ExtractSummariesData } from "../../Core/Data/Importer/ExtractSummariesData";
+import { Utility } from "../../Core/Utils/Utility";
 
 export class MantellaImportFileProcessor implements IDataImportFileProcessor {
   constructor(private llmProvider: IOpenAIProtocolLLMProvider) {}
@@ -79,7 +80,9 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
     total: number,
     agentPersonaStarter: string,
   ): Promise<ProcessedBio> {
-    console.log(`Processing Bios ${i + 1} of ${total}`);
+    let log = `Processing Bios ${i + 1} of ${total}`;
+    Utility.LastImportStatusUpdate = log;
+    console.log(log);
 
     try {
       var keys = Object.keys(row);

@@ -10,6 +10,7 @@ import { ImportMemoriesData } from "../Data/Importer/ImportMemoriesData";
 import { IOpenAIProtocolLLMProvider } from "../Interfaces/IOpenAIProtocolLLMProvider";
 import { Message } from "../Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 import { Utility } from "../Utils/Utility";
+import { ExtractSummariesData } from "../Data/Importer/ExtractSummariesData";
 
 export class DataImportService implements IDataImportService {
   constructor(
@@ -29,6 +30,7 @@ export class DataImportService implements IDataImportService {
     let human = data.player_starter_memory;
     let humanName = `${domain}_character`;
 
+    Utility.LastImportStatusUpdate = "Processing Bios";
     let processedBios: Array<ProcessedBio> = await fileProcessor.process(
       file,
       data.use_previously_processed_bios_file,
@@ -37,6 +39,7 @@ export class DataImportService implements IDataImportService {
     );
 
     if (!data.use_previously_imported_personas) {
+      Utility.LastImportStatusUpdate = "Creating Personas";
       let createPersonasResponses =
         await this.memgptProvider.createPersonas(processedBios);
 
@@ -46,6 +49,7 @@ export class DataImportService implements IDataImportService {
     }
 
     if (data.create_user_template == true) {
+      Utility.LastImportStatusUpdate = "Creating User Default Persona";
       await this.memgptProvider.createUserTemplate(
         humanName,
         data.player_starter_memory,
@@ -105,7 +109,9 @@ export class DataImportService implements IDataImportService {
 
     await this.dataRepository.saveCreatedAgentsToDatabase(thaumAgents);
 
-    console.log(`Imported ${processedBios.length} agents successfully`);
+    let log = `Imported ${processedBios.length} agents successfully`;
+    Utility.LastImportStatusUpdate = log + " STATUS_END";
+    console.log(log);
   }
 
   async importMemories(
@@ -130,9 +136,12 @@ export class DataImportService implements IDataImportService {
     let agent = agents[0];
 
     // Step - Take single text file of chat summaries (user must combine their files and split them with a newline).
-    let extractedSummariesData =
-      fileProcessor.extractSummariesFromFile(summariesFile);
+    let extractedSummariesData: ExtractSummariesData = {
+      original: "",
+      summaries: [],
+    };
 
+    if (summariesFile) fileProcessor.extractSummariesFromFile(summariesFile);
     for (let s of extractedSummariesData.summaries) {
       console.log([s]);
     }

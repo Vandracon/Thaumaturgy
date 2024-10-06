@@ -1,0 +1,110 @@
+.agents-container {
+  position: relative;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* General container for the agent list */
+.agent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-collapse: collapse;
+  width: 100%;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Header styling for the list to look like a table header */
+.agent-list-header {
+  display: flex;
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+  padding: 10px;
+  border-bottom: 2px solid #ccc;
+}
+
+/* Header cell styling */
+.agent-name-header,
+.agent-id-header {
+  flex: 1;
+  text-align: left;
+  padding: 5px 10px;
+}
+
+/* Styling for each agent row */
+.agent-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.agent-item:hover {
+  background-color: #f1f1f1;
+}
+
+/* Individual agent details */
+.agent-name,
+.agent-id {
+  flex: 1;
+  padding: 5px 10px;
+  text-align: left;
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  padding: 5px 10px;
+  margin: 3px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pagination-btn:hover {
+  background-color: #0056b3;
+}
+
+.pagination-btn.active {
+  background-color: #004085;
+}
+
+.page-info {
+  text-align: center;
+  color: #666;
+  margin-top: 10px;
+}
+
+.create-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.create-button:hover {
+  background-color: #218838;
+}

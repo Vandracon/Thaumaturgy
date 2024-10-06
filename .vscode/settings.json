@@ -7,7 +7,8 @@
     "titleBar.activeForeground": "#ECFEF6",
     "folderPathColor.custom1": "#d6ee00",
     "folderPathColor.custom2": "#ff5b32",
-    "folderPathColor.custom3": "#8490ff"
+    "folderPathColor.custom3": "#8490ff",
+    "folderPathColor.custom4": "#61dafb"
   },
   "folder-path-color.folders": [
     {
@@ -27,6 +28,12 @@
       "symbol": "S",
       "tooltip": "Server/App",
       "color": "custom3"
+    },
+    {
+      "path": "src/Server/webapp",
+      "symbol": "W",
+      "tooltip": "Server/WebApp",
+      "color": "custom4"
     }
   ]
 }

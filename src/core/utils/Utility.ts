@@ -1,8 +1,17 @@
 import { Message } from "../Data/OpenAIProtocol/LLMChatCompletionRequestBody";
 import * as config from "config";
 import * as fs from "fs";
+import path from "path";
+import * as ini from "ini";
+import { LLMConfig } from "../Data/MemGPT/Mod/LLMConfig";
+import { IFunctionSchema } from "../Entities/Preset";
+import { HttpException } from "../../Server/middleware/ErrorHandlingMiddleware";
+import { HttpStatusCode } from "axios";
+import { Response } from "express";
 
 export class Utility {
+  public static LastImportStatusUpdate = "";
+
   public static generateChatChunkId() {
     const prefix = "chatcmpl-";
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -122,5 +131,103 @@ export class Utility {
       `${process.cwd()}/data/domain/${config.THAUMATURGY.DOMAIN}/${config.IMPORTER.FILE_SYSTEM_PROMPT}`,
       "utf8",
     );
+  }
+
+  public static setSystemPromptSync(prompt: string) {
+    fs.writeFileSync(
+      path.join(
+        process.cwd(),
+        "data",
+        "domain",
+        config.THAUMATURGY.DOMAIN,
+        config.IMPORTER.FILE_SYSTEM_PROMPT,
+      ),
+      prompt,
+      "utf8",
+    );
+  }
+
+  public static getMemGPTLLMConfig(): LLMConfig {
+    try {
+      const filePath = path.resolve(config.MEMGPT.MOD.MEMGPT_CONFIG_PATH);
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const llm_config = ini.parse(fileContent);
+
+      // Extract the relevant data from the [model] section
+      const {
+        model_endpoint_type,
+        model_endpoint,
+        model_wrapper,
+        context_window,
+      } = llm_config.model;
+
+      return {
+        model: null,
+        model_endpoint_type,
+        model_endpoint,
+        model_wrapper,
+        context_window: parseInt(context_window),
+      };
+    } catch (error) {
+      console.error("Error reading or parsing config file:", error);
+      throw error;
+    }
+  }
+
+  public static updateMemGPTLLMConfig(newConfig: LLMConfig) {
+    try {
+      const filePath = path.resolve(config.MEMGPT.MOD.MEMGPT_CONFIG_PATH);
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const llm_config = ini.parse(fileContent);
+
+      // Update only the fields that are passed in
+      if (newConfig.model_endpoint_type !== undefined) {
+        llm_config.model.model_endpoint_type = newConfig.model_endpoint_type;
+      }
+      if (newConfig.model_endpoint !== undefined) {
+        llm_config.model.model_endpoint = newConfig.model_endpoint;
+      }
+      if (newConfig.model_wrapper !== undefined) {
+        llm_config.model.model_wrapper = newConfig.model_wrapper;
+      }
+      if (
+        newConfig.context_window !== undefined &&
+        newConfig.context_window != null
+      ) {
+        llm_config.model.context_window = newConfig.context_window.toString();
+      }
+
+      // Serialize the updated config back to INI format
+      const updatedFileContent = ini.stringify(llm_config);
+
+      // Write the updated content back to the INI file
+      fs.writeFileSync(filePath, updatedFileContent, "utf-8");
+    } catch (error) {
+      console.error("Error updating config file:", error);
+      throw error;
+    }
+  }
+
+  public static convertFunctionListToSchema(
+    functionList: string,
+  ): Array<config.FunctionSchema> {
+    const functionArray = functionList.split(",").map((func) => func.trim());
+
+    const schema = functionArray.map((func) => ({
+      name: func,
+    }));
+
+    return schema;
+  }
+
+  public static routerLevelExceptionHandler(e: Error, res: Response) {
+    console.log(e);
+    if (e instanceof HttpException) {
+      res.status(e.statusCode).json({ error: e.message });
+    } else {
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ data: { error: e.message } });
+    }
   }
 }

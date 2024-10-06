@@ -3,6 +3,7 @@ config/dev.json
 local
 node_modules
 src
+!src/Server/webapp/build
 templates
 tmp
 types

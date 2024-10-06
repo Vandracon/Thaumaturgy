@@ -4,6 +4,7 @@ import { LLMChatRequestMessageBody } from "../Data/OpenAIProtocol/LLMChatRequest
 import { Preset } from "../Entities/Preset";
 import { Agent, ThaumaturgyAgent } from "../Entities/Agent";
 import { CoreMemoryResponse } from "../Data/MemGPT/CoreMemory";
+import { ChatHistory } from "../Data/Agents/ChatHistoryRequest";
 
 export interface IMemGPTProvider {
   handleOneOnOneMessage(
@@ -57,4 +58,12 @@ export interface IMemGPTProvider {
   ): Promise<void>;
 
   addToArchivalMemory(agentId: string, content: string): Promise<void>;
+
+  sendNonStreamingMessage(agentId: string, message: string): Promise<any>;
+
+  getChatHistory(
+    agentId: string,
+    start: number,
+    count: number,
+  ): Promise<ChatHistory>;
 }

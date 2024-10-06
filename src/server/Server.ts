@@ -16,6 +16,10 @@ import { SoundPlayAudioPlayer } from "../Infrastructure/SoundPlayAudioPlayer";
 import { MemGPTGroupChatHandler } from "../Infrastructure/MemGPT/MemGPTGroupChatHandler";
 import { MemGPTProviderUtils } from "../Infrastructure/MemGPT/MemGPTProviderUtils";
 import { MantellaImportFileProcessor } from "../Infrastructure/Importer/MantellaImportFileProcessor";
+import { AgentsRouter } from "./routes/AgentsRouter";
+import { WebAppRouter } from "./routes/WebAppRouter";
+import { DockerSystem } from "../Infrastructure/DockerSystem";
+import { SystemService } from "../Core/Services/SystemService";
 
 class Server {
   private app: Application;
@@ -54,11 +58,11 @@ class Server {
       memGPTGroupChatHandler,
       memGPTProviderUtils,
     );
-
     let memGPTMod = new MemGPTMod(memGPTDbClient);
+    let system = new SystemService(new DockerSystem());
 
     // Routes
-    new RootRouter(this.app);
+    new RootRouter(this.app, system);
     new OpenAIProtocolRouter(
       this.app,
       openAIProtocolLLMProvider,
@@ -73,6 +77,13 @@ class Server {
       thaumaturgyDataRepository,
     );
     new MemGPTModRouter(this.app, memGPTMod);
+    new AgentsRouter(
+      this.app,
+      thaumaturgyDataRepository,
+      memGPTMod,
+      memGPTProvider,
+    );
+    new WebAppRouter(this.app);
 
     this.start();
   }
