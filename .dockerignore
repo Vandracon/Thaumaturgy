@@ -1,5 +1,7 @@
 .vscode
 config/dev.json
+data
+docs
 local
 node_modules
 src
