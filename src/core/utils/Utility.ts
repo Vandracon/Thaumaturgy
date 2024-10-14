@@ -4,10 +4,19 @@ import * as fs from "fs";
 import path from "path";
 import * as ini from "ini";
 import { LLMConfig } from "../Data/MemGPT/Mod/LLMConfig";
-import { IFunctionSchema } from "../Entities/Preset";
 import { HttpException } from "../../Server/middleware/ErrorHandlingMiddleware";
 import { HttpStatusCode } from "axios";
 import { Response } from "express";
+
+/*
+To update all agent core memory limits
+UPDATE your_table_name
+SET your_column_name = json_set(
+    your_column_name,
+    '$.memory.persona.limit', 4000,
+    '$.memory.human.limit', 4000
+)
+*/
 
 export class Utility {
   public static LastImportStatusUpdate = "";

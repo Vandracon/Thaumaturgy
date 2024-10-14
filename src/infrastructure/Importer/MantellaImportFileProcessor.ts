@@ -108,7 +108,9 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
         persona: row["bio"],
       };
 
-      let personaCharLimit = 2000 - data.persona_header.length;
+      let personaCharLimit =
+        config.MEMGPT.CORE_MEMORY_PERSONA_CHARACTER_LIMIT -
+        data.persona_header.length;
 
       if (data.persona.length > personaCharLimit) {
         data.persona = await this.summarizeBioUntilSatisfied(

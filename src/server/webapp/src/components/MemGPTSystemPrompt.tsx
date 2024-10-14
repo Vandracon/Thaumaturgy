@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 const MemGPTSystemPrompt: React.FC = () => {
   const [systemPrompt, setSystemPrompt] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [saveButtonEnabled, setSaveButtonEnabled] = useState<boolean>(true);
 
   // Fetch system prompt from the server on component mount
   useEffect(() => {
@@ -28,13 +29,21 @@ const MemGPTSystemPrompt: React.FC = () => {
   // Function to handle save action
   const handleSave = async () => {
     try {
-      const response = await axios.post("/api/v1/mod/agents/system", {
+      setSaveButtonEnabled(false);
+      toast.info("Restarting MemGPT");
+      await axios.post("/api/v1/system/memgpt/restart", {});
+      toast.info("Saving prompt..");
+      await axios.post("/api/v1/mod/agents/system", {
         new_prompt: systemPrompt,
       });
+      toast.info("Restarting MemGPT Again");
+      await axios.post("/api/v1/system/memgpt/restart", {});
       toast.success("System prompt saved successfully!");
     } catch (error) {
       console.error("Error saving system prompt:", error);
       toast.error("Failed to save system prompt.");
+    } finally {
+      setSaveButtonEnabled(true);
     }
   };
 
@@ -65,7 +74,11 @@ const MemGPTSystemPrompt: React.FC = () => {
           <p className="character-count">
             Character Count: {systemPrompt.length}
           </p>
-          <button className="save-button" onClick={handleSave}>
+          <button
+            className="save-button"
+            onClick={handleSave}
+            disabled={!saveButtonEnabled}
+          >
             Save System Prompt
           </button>
         </div>

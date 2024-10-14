@@ -1,27 +1,31 @@
 import { ISystem } from "../Core/Interfaces/ISystem";
 import Docker from "dockerode";
 import config from "config";
+import fs from "fs";
 
 export class DockerSystem implements ISystem {
   private docker: Docker;
   private memGPTContainerName: string;
 
   constructor() {
-    this.docker = new Docker();
+    this.docker = this.initializeDocker();
     this.memGPTContainerName = config.SYSTEM.MEMGPT_CONTAINER_NAME;
   }
 
-  async restartMemGPT(): Promise<void> {
+  public async restartMemGPT(): Promise<void> {
     try {
-      const container = this.docker.getContainer(this.memGPTContainerName);
-      await container.restart();
+      if (this.isRunningInDocker()) {
+        console.log("Restarting MemGPT..");
+        const container = this.docker.getContainer(this.memGPTContainerName);
+        await container.restart();
 
-      console.log(
-        `Container ${this.memGPTContainerName} restarted successfully`,
-      );
+        console.log(
+          `Container ${this.memGPTContainerName} restarted successfully`,
+        );
 
-      // Wait for the container to be fully up and healthy
-      await this.waitForContainerHealth(this.memGPTContainerName);
+        // Wait for the container to be fully up and healthy
+        await this.waitForContainerHealth(this.memGPTContainerName);
+      }
     } catch (error: any) {
       const errMsg = `Error restarting container ${this.memGPTContainerName}: ${error.message || error}`;
       console.error(errMsg);
@@ -61,5 +65,34 @@ export class DockerSystem implements ISystem {
     }
 
     throw new Error(`Container ${containerId} did not become healthy in time.`);
+  }
+
+  private isRunningInDocker() {
+    try {
+      // Check if the cgroup file exists and contains 'docker'
+      if (fs.existsSync("/proc/1/cgroup")) {
+        const cgroupContent = fs.readFileSync("/proc/1/cgroup", "utf8");
+        return cgroupContent.includes("docker");
+      }
+    } catch (error) {
+      console.error("Error checking for Docker environment:", error);
+    }
+    return false;
+  }
+
+  private initializeDocker() {
+    let docker;
+    if (this.isRunningInDocker()) {
+      // Running inside Docker, use the mounted socket path
+      docker = new Docker({ socketPath: "/var/run/docker.sock" });
+      console.log(
+        "Running inside Docker. Using socket path /var/run/docker.sock",
+      );
+    } else {
+      // Outside Docker, configure accordingly (e.g., local Docker daemon)
+      docker = new Docker(); // Defaults to connecting to localhost Docker
+      console.log("Running outside Docker.");
+    }
+    return docker;
   }
 }

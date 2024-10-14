@@ -26,6 +26,7 @@ const AgentCreate: React.FC<AgentCreateProps> = ({
     "send_message",
   ]);
   const [persona, setPersona] = useState("");
+  const [saveButtonEnabled, setSaveButtonEnabled] = useState<boolean>(true);
 
   const handleFunctionToggle = (func: string) => {
     setFunctionNames((prev) =>
@@ -49,11 +50,16 @@ const AgentCreate: React.FC<AgentCreateProps> = ({
 
     try {
       console.log("Creating agent with data:", configData);
+      toast.info("Creating agent..");
+      setSaveButtonEnabled(false);
       let res = await axios.post("/api/v1/agents", configData);
       onAgentCreated(res.data.agent_state.id, name);
       toast.success("Agent created");
     } catch (error) {
       console.error("Error creating agent:", error);
+      toast.error("Error creating agent");
+    } finally {
+      setSaveButtonEnabled(true);
     }
   };
 
@@ -146,7 +152,12 @@ const AgentCreate: React.FC<AgentCreateProps> = ({
           </div>
 
           <div className="modal-buttons">
-            <button type="button" className="save-button" onClick={handleSave}>
+            <button
+              type="button"
+              className="save-button"
+              onClick={handleSave}
+              disabled={!saveButtonEnabled}
+            >
               Save
             </button>
             <button type="button" className="cancel-button" onClick={onClose}>

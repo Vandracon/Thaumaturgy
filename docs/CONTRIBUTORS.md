@@ -1,3 +1,8 @@
+from the root directory, run `npm run build` to build the server.
+from the root directory, go to `/src/Server/webapp` and run `npm run build` to build the webapp
+
+Then you can build the images below
+
 Building MemGPT Docker Image (From MemGPT repo):
 
 `docker build --target development --build-arg MEMGPT_ENVIRONMENT=DEVELOPMENT -t vandracon/thaumaturgy/memgpt .`
@@ -5,6 +10,3 @@ Building MemGPT Docker Image (From MemGPT repo):
 Building Thaumaturgy Docker Image:
 
 `docker build -t vandracon/thaumaturgy:1.0.0 .`
-
-To update prompt for agents
-TODO: make sure to update prompt txt file in file system in addition to calling rest call for updating system of existing agents.

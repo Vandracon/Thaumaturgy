@@ -94,10 +94,7 @@ const AgentChat: React.FC<AgentChatProps> = () => {
 
       setMessages((prevMessages) => [...prevMessages, ...storedMessages]);
 
-      // Scroll to bottom
-      if (chatContainerRef && chatContainerRef.current)
-        chatContainerRef.current.scrollTop =
-          chatContainerRef.current.scrollHeight;
+      scrollToBottom();
     } catch (error) {
       console.error("Error fetching chat:", error);
       toast.error("Failed to fetch chat.");
@@ -117,6 +114,7 @@ const AgentChat: React.FC<AgentChatProps> = () => {
       type: "message",
     };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
+    scrollToBottom();
     setUserMessage(""); // Clear the input field
     saveMessageToLocalStorage(newMessage);
 
@@ -128,13 +126,23 @@ const AgentChat: React.FC<AgentChatProps> = () => {
         message: userMessage,
       });
 
-      //const fullData = response.data.messages; // Store full response data for modal
       parseMessages(response.data.messages, true, true);
     } catch (error) {
       console.error("Error sending message", error);
     } finally {
       setIsTyping(false);
+      scrollToBottom();
     }
+  };
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      console.log(chatContainerRef);
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop =
+          chatContainerRef.current.scrollHeight;
+      }
+    });
   };
 
   const getMessagesKey = () => {

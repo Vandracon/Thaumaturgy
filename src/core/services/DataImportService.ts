@@ -181,7 +181,7 @@ export class DataImportService implements IDataImportService {
 
         if (
           newCoreMemoryPersonaResult.length >
-          config.MEMGPT.CORE_MEMORY_CHARACTER_LIMIT
+          config.MEMGPT.CORE_MEMORY_PERSONA_CHARACTER_LIMIT
         ) {
           if (numTries > config.IMPORTER.MAX_TRIES_MEMORY_IMPORT)
             return newCoreMemoryPersonaResult;
@@ -195,10 +195,10 @@ export class DataImportService implements IDataImportService {
 
       if (
         newCoreMemoryPersonaLLMResponse.length >
-        config.MEMGPT.CORE_MEMORY_CHARACTER_LIMIT
+        config.MEMGPT.CORE_MEMORY_PERSONA_CHARACTER_LIMIT
       ) {
         throw new Error(
-          `Unable to summarize new persona core memory after ${config.MEMGPT.CORE_MEMORY_CHARACTER_LIMIT} tries.`,
+          `Unable to summarize new persona core memory after ${config.IMPORTER.MAX_TRIES_BIO_SUMMARY} tries.`,
         );
       }
 
@@ -221,7 +221,7 @@ export class DataImportService implements IDataImportService {
 
         if (
           newCoreMemoryHumanResult.length >
-          config.MEMGPT.CORE_MEMORY_CHARACTER_LIMIT
+          config.MEMGPT.CORE_MEMORY_HUMAN_CHARACTER_LIMIT
         ) {
           if (numTries > config.IMPORTER.MAX_TRIES_MEMORY_IMPORT)
             return newCoreMemoryHumanResult;
@@ -235,10 +235,10 @@ export class DataImportService implements IDataImportService {
 
       if (
         newCoreMemoryHumanLLMResponse.length >
-        config.MEMGPT.CORE_MEMORY_CHARACTER_LIMIT
+        config.MEMGPT.CORE_MEMORY_HUMAN_CHARACTER_LIMIT
       ) {
         throw new Error(
-          `Unable to summarize new persona core memory after ${config.MEMGPT.CORE_MEMORY_CHARACTER_LIMIT} tries.`,
+          `Unable to summarize new persona core memory after ${config.IMPORTER.MAX_TRIES_BIO_SUMMARY} tries.`,
         );
       }
     } else {
