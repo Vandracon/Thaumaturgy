@@ -137,7 +137,7 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
     const response = await this.llmProvider.simpleUserRequestToLLM(
       `Extract the most important information from the following text and present it in an extended summary (2 paragraphs):`,
       `${bio}`,
-      450,
+      config.LLM.MAX_TOKENS_FOR_CORE_MEMORY_BANK,
     );
     var msg = response.choices[0].message as Message;
     console.log(

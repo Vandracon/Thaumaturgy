@@ -50,6 +50,7 @@ declare module "config" {
   interface ILLMConfig {
     ENDPOINT: string;
     FALLBACK_MAX_TOKENS: number;
+    MAX_TOKENS_FOR_CORE_MEMORY_BANK: number;
   }
 
   interface IImporterConfig {

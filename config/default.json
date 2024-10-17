@@ -46,7 +46,8 @@
 
   "LLM": {
     "ENDPOINT": "http://localhost:5001/v1/chat/completions",
-    "FALLBACK_MAX_TOKENS": 2000
+    "FALLBACK_MAX_TOKENS": 2000,
+    "MAX_TOKENS_FOR_CORE_MEMORY_BANK": 900
   },
 
   "IMPORTER": {
