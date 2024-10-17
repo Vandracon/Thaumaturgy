@@ -5,7 +5,7 @@ Then you can build the images below
 
 Building MemGPT Docker Image (From MemGPT repo):
 
-`docker build --target development --build-arg MEMGPT_ENVIRONMENT=DEVELOPMENT -t vandracon/thaumaturgy/memgpt .`
+`docker build --build-arg MEMGPT_ENVIRONMENT=PRODUCTION -t vandracon/thaumaturgy/memgpt:1.0.0 .`
 
 Building Thaumaturgy Docker Image:
 
