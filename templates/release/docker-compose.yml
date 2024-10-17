@@ -8,6 +8,7 @@ services:
     environment:
       - MEMGPT_SERVER_PASS=password
       - WATCHFILES_FORCE_POLLING=true
+      - MEMGPT_CHAT_MEMORY_BANK_CHARACTER_LIMIT=4000
     volumes:
       - ./local/instance/memgpt:/root/.memgpt
     ports:
@@ -36,12 +37,13 @@ services:
       dockerfile: Dockerfile
     image: vandracon/thaumaturgy:1.0.0
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Give docker daemon access so node can restart the MEMGPT service from inside container
       - ./config:/app/config
       - ./local/instance/thaumaturgy/thaumaturgy.db:/app/local/thaumaturgy.db
       - ./local/instance/thaumaturgy/thaumaturgydebug.db:/app/local/thaumaturgydebug.db
       - ./local/instance/memgpt/sqlite.db:/app/local/sqlite.db
       - ./local/instance/memgpt/config:/app/local/config
-      - ./data:/app/local/data
+      - ./data:/app/data
     environment:
       - NODE_ENV=production
       - MEMGPT_SQLITE_DATABASE_PATH=/app/local/sqlite.db
