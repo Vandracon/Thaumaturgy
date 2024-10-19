@@ -64,6 +64,7 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
     const data = {
       messages: messages,
       max_tokens: maxTokens,
+      stream: false,
     };
 
     try {
@@ -71,6 +72,7 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
         headers: headers,
       });
       console.log("LLM Response: ", response.data);
+      //console.log("LLM Detailed Response: ", response.data.choices[0]);
       return response.data;
     } catch (error) {
       console.error("Error fetching response from LLM:", error);
@@ -89,6 +91,7 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
     const data = {
       messages: messages,
       max_tokens: maxTokens,
+      stream: false,
     };
 
     try {

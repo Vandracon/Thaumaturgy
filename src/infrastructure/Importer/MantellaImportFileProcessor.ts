@@ -135,7 +135,7 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
 
   private async summarizeBio(bio: string) {
     const response = await this.llmProvider.simpleUserRequestToLLM(
-      `Extract the most important information from the following text and present it in an extended summary (2 paragraphs):`,
+      `Summarize the following text by preserving all important information and key points. The summary should condense the content significantly without omitting critical details. Focus on clarity and accuracy, and avoid adding any new information. Aim for a lengthier, detailed summary that captures the essence of the text while shortening it.`,
       `${bio}`,
       config.LLM.MAX_TOKENS_FOR_CORE_MEMORY_BANK,
     );
