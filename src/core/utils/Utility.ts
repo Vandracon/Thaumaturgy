@@ -7,6 +7,7 @@ import { LLMConfig } from "../Data/MemGPT/Mod/LLMConfig";
 import { HttpException } from "../../Server/middleware/ErrorHandlingMiddleware";
 import { HttpStatusCode } from "axios";
 import { Response } from "express";
+import editJsonFile from "edit-json-file";
 
 /*
 To update all agent core memory limits
@@ -171,7 +172,7 @@ export class Utility {
       } = llm_config.model;
 
       return {
-        model: null,
+        model: config.LLM.MODEL_NAME,
         model_endpoint_type,
         model_endpoint,
         model_wrapper,
@@ -204,6 +205,18 @@ export class Utility {
         newConfig.context_window != null
       ) {
         llm_config.model.context_window = newConfig.context_window.toString();
+      }
+      if (newConfig.model !== undefined) {
+        // Update config file
+        const file = editJsonFile(`${process.cwd()}/config/default.json`);
+        file.set("LLM.MODEL_NAME", newConfig.model);
+        file.save();
+
+        // Update already loaded config in memory
+        config.LLM.MODEL_NAME = newConfig.model as string;
+
+        // Update INI (MemGPT uses it when creating new agents)
+        llm_config.model.model = newConfig.model;
       }
 
       // Serialize the updated config back to INI format
@@ -238,5 +251,9 @@ export class Utility {
         .status(HttpStatusCode.InternalServerError)
         .json({ data: { error: e.message } });
     }
+  }
+
+  public static isNullOrEmpty(value: any): boolean {
+    return value === null || value === undefined || value === "";
   }
 }

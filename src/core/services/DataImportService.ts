@@ -82,7 +82,7 @@ export class DataImportService implements IDataImportService {
           human,
           bio.name,
           bio.persona_header + bio.persona,
-          "",
+          config.LLM.MODEL_NAME,
           config.MEMGPT.FUNCTIONS_SCHEMA,
         ),
       );
@@ -171,6 +171,11 @@ export class DataImportService implements IDataImportService {
               'Avoid starting with "in this description", or "from the text", as its not first person:',
             personaAndSummary,
             config.LLM.MAX_TOKENS_FOR_CORE_MEMORY_BANK,
+            null,
+            0,
+            null,
+            0.5,
+            1,
           );
         numTries++;
 
@@ -212,6 +217,11 @@ export class DataImportService implements IDataImportService {
               "list out facts line by line starting with a hyphen that will be stored in your memory:",
             extractedSummariesData.original,
             config.LLM.MAX_TOKENS_FOR_CORE_MEMORY_BANK,
+            null,
+            0,
+            null,
+            0.5,
+            1,
           );
         numTries++;
 

@@ -51,6 +51,7 @@ declare module "config" {
     ENDPOINT: string;
     FALLBACK_MAX_TOKENS: number;
     MAX_TOKENS_FOR_CORE_MEMORY_BANK: number;
+    MODEL_NAME: string;
   }
 
   interface IImporterConfig {

@@ -56,7 +56,7 @@ export class Agent {
       human: this.human,
       persona_name: this.personaName,
       persona: this.persona,
-      model: "",
+      model: this.model,
       function_names: strFunctionNames,
     };
   }

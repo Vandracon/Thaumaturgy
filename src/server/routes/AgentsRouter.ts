@@ -103,6 +103,7 @@ export class AgentsRouter extends BaseRouter {
             guid,
             req.body.human,
             req.body.persona,
+            req.body.model,
           );
 
           res.json({});

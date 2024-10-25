@@ -2,9 +2,13 @@ import { GetAgentsResponse } from "../Core/Data/Agents/GetAgentsResponse";
 import { ThaumaturgyAgent } from "../Core/Entities/Agent";
 import { IDatabaseClient } from "../Core/Interfaces/IDatabaseClient";
 import { IDataRepository } from "../Core/Interfaces/IDataRepository";
+import { IMemGPTMod } from "./MemGPT/MemGPTMod";
 
 export class DataRepository implements IDataRepository {
-  constructor(private dbClient: IDatabaseClient) {}
+  constructor(
+    private dbClient: IDatabaseClient,
+    private memGPTMod: IMemGPTMod,
+  ) {}
 
   async getAgentByName(name: string): Promise<Array<ThaumaturgyAgent>> {
     return this.dbClient.selectData(`SELECT * FROM agents WHERE name = ?`, [
@@ -25,6 +29,13 @@ export class DataRepository implements IDataRepository {
     );
     if (result && result.length > 0) {
       totalCount = result[0].totalCount;
+    }
+
+    // Add additional info
+    for (let agent of agents) {
+      let details = await this.memGPTMod.getAgentDetails(agent.id);
+      let llm_config_json = details?.llm_config as unknown as string;
+      if (llm_config_json) agent.llm_config = JSON.parse(llm_config_json);
     }
 
     return {

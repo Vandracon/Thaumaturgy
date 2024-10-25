@@ -3,6 +3,7 @@ import axios from "axios";
 import Modal from "react-modal";
 import { ToastContainer, toast } from "react-toastify";
 import "./AgentModal.css";
+import { LLMConfig } from "./MemGPTAgents";
 
 interface AgentMemory {
   description: string;
@@ -16,6 +17,7 @@ interface Memory {
 }
 
 interface AgentState {
+  llm_config: LLMConfig;
   memory: Memory;
 }
 
@@ -25,6 +27,7 @@ interface AgentModalProps {
   agent: {
     id: string;
     name: string;
+    llm_config: LLMConfig;
     state: AgentState | null;
   } | null;
   onAgentChat: (id: string, agentName: string) => void;
@@ -36,6 +39,7 @@ const AgentModal: React.FC<AgentModalProps> = ({
   agent,
   onAgentChat,
 }) => {
+  const [model, setModel] = useState<string>("");
   const [personaMemory, setPersonaMemory] = useState<string>("");
   const [humanMemory, setHumanMemory] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
@@ -43,6 +47,7 @@ const AgentModal: React.FC<AgentModalProps> = ({
   // Initialize memory state from agent when modal opens
   useEffect(() => {
     if (agent) {
+      setModel(agent.llm_config.model || "");
       setPersonaMemory(agent.state?.memory.persona.value || "");
       setHumanMemory(agent.state?.memory.human.value || "");
     }
@@ -57,6 +62,7 @@ const AgentModal: React.FC<AgentModalProps> = ({
       await axios.patch(`/api/v1/agents/${agent.id}/memory`, {
         persona: personaMemory,
         human: humanMemory,
+        model,
       });
       toast.success("Saved");
     } catch (error) {
@@ -109,6 +115,15 @@ const AgentModal: React.FC<AgentModalProps> = ({
         <div className="form-group">
           <label htmlFor="agent-name">Name:</label>
           <span>{agent.name}</span>
+        </div>
+        <div className="form-group">
+          <label htmlFor="agent-name">AI Model:</label>
+          <input
+            type="text"
+            placeholder="Enter valid model name"
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+          />
         </div>
 
         <div className="form-group">

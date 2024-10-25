@@ -1,4 +1,5 @@
 export enum ThaumicIntent {
+  UNKNOWN = 0,
   ONE_ON_ONE = 1,
   GROUP_CONVERSATION = 2,
   SUMMARIZE = 3,

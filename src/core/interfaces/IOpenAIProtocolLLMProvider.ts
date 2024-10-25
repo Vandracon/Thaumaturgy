@@ -8,9 +8,19 @@ export interface IOpenAIProtocolLLMProvider {
     systemPrompt: string | null,
     userPrompt: string | null,
     maxTokens: number,
+    model: string | null,
+    frequency_penalty: number,
+    stop: any,
+    temperature: number,
+    top_p: number,
   ): Promise<LLMChatCompletionResponse>;
   sendToLLM(
     messages: Array<Message>,
     maxTokens: number,
+    model: string | null,
+    frequency_penalty: number,
+    stop: any,
+    temperature: number,
+    top_p: number,
   ): Promise<LLMChatCompletionResponse>;
 }

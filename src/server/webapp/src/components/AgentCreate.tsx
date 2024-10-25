@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./AgentCreate.css";
 import { ToastContainer, toast } from "react-toastify";
+import { LLMConfig } from "./MemGPTAgents";
 
 interface AgentCreateProps {
   isOpen: boolean;
   onClose: () => void;
-  onAgentCreated: (agentId: string, agentName: string) => void; // Emit both ID and Name
+  onAgentCreated: (
+    agentId: string,
+    agentName: string,
+    agentLLMConfig: LLMConfig,
+  ) => void;
 }
 
 const AgentCreate: React.FC<AgentCreateProps> = ({
@@ -53,7 +58,11 @@ const AgentCreate: React.FC<AgentCreateProps> = ({
       toast.info("Creating agent..");
       setSaveButtonEnabled(false);
       let res = await axios.post("/api/v1/agents", configData);
-      onAgentCreated(res.data.agent_state.id, name);
+      onAgentCreated(
+        res.data.agent_state.id,
+        name,
+        res.data.agent_state.llm_config,
+      );
       toast.success("Agent created");
     } catch (error) {
       console.error("Error creating agent:", error);

@@ -24,13 +24,27 @@ interface Memory {
 }
 
 export interface AgentState {
+  llm_config: LLMConfig;
   memory: Memory;
+}
+
+export interface LLMConfig {
+  model: string | null;
+  model_endpoint_type: string | null;
+  model_endpoint: string | null;
+  model_wrapper: string | null;
+  context_window: number | null;
 }
 
 const MemGPTAgents: React.FC = () => {
   const navigate = useNavigate();
   const [agents, setAgents] = useState<
-    Array<{ id: string; name: string; state: AgentState | null }>
+    Array<{
+      id: string;
+      name: string;
+      llm_config: LLMConfig;
+      state: AgentState | null;
+    }>
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +53,7 @@ const MemGPTAgents: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<{
     id: string;
     name: string;
+    llm_config: LLMConfig;
     state: AgentState | null;
   } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,6 +84,7 @@ const MemGPTAgents: React.FC = () => {
   const handleAgentClick = async (agent: {
     id: string;
     name: string;
+    llm_config: LLMConfig;
     state: AgentState | null;
   }) => {
     setSelectedAgent(agent);
@@ -89,10 +105,14 @@ const MemGPTAgents: React.FC = () => {
   };
 
   // Handle agent creation and refresh the list
-  const handleAgentCreated = (id: string, name: string) => {
+  const handleAgentCreated = (
+    id: string,
+    name: string,
+    llm_config: LLMConfig,
+  ) => {
     setIsCreateModalOpen(false); // Close the create modal after creation
     fetchAgents(); // Refresh the list after a new agent is created
-    handleAgentClick({ id, name, state: null });
+    handleAgentClick({ id, name, llm_config, state: null });
   };
 
   const handleAgentChat = (id: string, agentName: string) => {

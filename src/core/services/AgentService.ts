@@ -10,11 +10,13 @@ import { Utility } from "../Utils/Utility";
 import config from "config";
 import { ChatRequest } from "../Data/Agents/ChatRequest";
 import { ChatHistory } from "../Data/Agents/ChatHistoryRequest";
+import { IMemGPTMod } from "../../Infrastructure/MemGPT/MemGPTMod";
 
 export class AgentService implements IAgentService {
   constructor(
     private dataRepository: IDataRepository,
     private memGPTProvider: IMemGPTProvider,
+    private memGPTMod: IMemGPTMod,
   ) {}
 
   async chatToAgent(agentId: string, data: ChatRequest): Promise<any> {
@@ -25,8 +27,20 @@ export class AgentService implements IAgentService {
     return this.dataRepository.getAgents(page, pageSize);
   }
 
-  updateAgentMemory(id: string, human: string, persona: string): Promise<void> {
-    return this.memGPTProvider.updateCoreMemory(id, human, persona);
+  async updateAgentMemory(
+    id: string,
+    human: string,
+    persona: string,
+    model: string,
+  ): Promise<void> {
+    await this.memGPTProvider.updateCoreMemory(id, human, persona);
+    await this.memGPTMod.updateAgentLLMSettings(id, {
+      model,
+      model_endpoint_type: null,
+      model_endpoint: null,
+      model_wrapper: null,
+      context_window: null,
+    });
   }
 
   async createAgent(data: CreateAgentRequest): Promise<void> {
@@ -49,7 +63,9 @@ export class AgentService implements IAgentService {
       data.config.human,
       data.config.name,
       data.config.persona,
-      data.config.model,
+      Utility.isNullOrEmpty(data.config.model)
+        ? config.LLM.MODEL_NAME
+        : data.config.model,
       Utility.convertFunctionListToSchema(data.config.function_names),
     );
 

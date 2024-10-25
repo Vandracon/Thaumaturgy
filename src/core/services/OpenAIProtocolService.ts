@@ -33,7 +33,7 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
     let hasSystemPromptForMemGPT = false;
     let dynamicData = "";
     let playerUserIncluded = false;
-    let intent: ThaumicIntent = ThaumicIntent.ONE_ON_ONE;
+    let intent: ThaumicIntent = ThaumicIntent.UNKNOWN;
     let maxTokens = req.body.max_tokens;
     let systemMessageBody: LLMChatRequestMessageBody = {
       message: "",
@@ -216,7 +216,7 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
               `${config.THAUMATURGY.HUMAN_STARTER_MEMORY}`,
               processedBio.name,
               processedBio.persona_header + processedBio.persona,
-              "",
+              config.LLM.MODEL_NAME,
               config.MEMGPT.FUNCTIONS_SCHEMA,
             );
 
@@ -252,7 +252,7 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
               `${config.THAUMATURGY.HUMAN_STARTER_MEMORY}`,
               "memgpt_starter",
               config.THAUMATURGY.UNKNOWN_AGENT_CREATION_PERSONA,
-              "",
+              config.LLM.MODEL_NAME,
               config.MEMGPT.FUNCTIONS_SCHEMA,
             );
 

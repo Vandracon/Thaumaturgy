@@ -51,6 +51,11 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
     systemPrompt: string | null,
     userPrompt: string | null,
     maxTokens: number,
+    model: string,
+    frequency_penalty: number,
+    stop: any,
+    temperature: number,
+    top_p: number,
   ): Promise<LLMChatCompletionResponse> {
     const headers = {
       //'Authorization': `Bearer YOUR_OPEN_AI_KEY`,
@@ -61,11 +66,18 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
       messages.push({ role: "system", content: systemPrompt });
     if (userPrompt != null)
       messages.push({ role: "user", content: userPrompt });
-    const data = {
+
+    const data: any = {
       messages: messages,
       max_tokens: maxTokens,
       stream: false,
+      model: model || config.LLM.MODEL_NAME,
     };
+
+    if (frequency_penalty) data.frequency_penalty = frequency_penalty;
+    if (stop) data.stop = stop;
+    if (temperature) data.temperature = temperature;
+    if (top_p) data.top_p = top_p;
 
     try {
       const response = await axios.post(config.LLM.ENDPOINT, data, {
@@ -83,16 +95,27 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
   async sendToLLM(
     messages: Array<Message>,
     maxTokens: number,
+    model: string,
+    frequency_penalty: number,
+    stop: any,
+    temperature: number,
+    top_p: number,
   ): Promise<LLMChatCompletionResponse> {
     const headers = {
       //'Authorization': `Bearer YOUR_OPEN_AI_KEY`,
       "Content-Type": "application/json",
     };
-    const data = {
+    const data: any = {
       messages: messages,
       max_tokens: maxTokens,
       stream: false,
+      model: model || config.LLM.MODEL_NAME,
     };
+
+    if (frequency_penalty) data.frequency_penalty = frequency_penalty;
+    if (stop) data.stop = stop;
+    if (temperature) data.temperature = temperature;
+    if (top_p) data.top_p = top_p;
 
     try {
       const response = await axios.post(config.LLM.ENDPOINT, data, {

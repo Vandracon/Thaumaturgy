@@ -110,7 +110,7 @@ export class MemGPTMod implements IMemGPTMod {
   }
 
   async getAgentDetails(id: string): Promise<GetAgentDetailsResponse | null> {
-    let sql = `SELECT state FROM agents WHERE id = ?`;
+    let sql = `SELECT state, llm_config FROM agents WHERE id = ?`;
     let data = await this.dbClient.selectData(sql, [id]);
 
     if (data && data.length) {

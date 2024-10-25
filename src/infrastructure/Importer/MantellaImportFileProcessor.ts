@@ -138,6 +138,11 @@ export class MantellaImportFileProcessor implements IDataImportFileProcessor {
       `Summarize the following text by preserving all important information and key points. The summary should condense the content significantly without omitting critical details. Focus on clarity and accuracy, and avoid adding any new information. Aim for a lengthier, detailed summary that captures the essence of the text while shortening it.`,
       `${bio}`,
       config.LLM.MAX_TOKENS_FOR_CORE_MEMORY_BANK,
+      null,
+      0,
+      null,
+      0.4,
+      1,
     );
     var msg = response.choices[0].message as Message;
     console.log(

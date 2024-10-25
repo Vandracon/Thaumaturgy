@@ -46,8 +46,12 @@ class Server {
       config.MEMGPT.MOD.MEMGPT_SQLITE_DATABASE_PATH,
       undefined,
     );
+    let memGPTMod = new MemGPTMod(memGPTDbClient);
     let openAIProtocolLLMProvider = new OpenAIProtocolLLMProvider();
-    let thaumaturgyDataRepository = new DataRepository(thaumaturgyDbClient);
+    let thaumaturgyDataRepository = new DataRepository(
+      thaumaturgyDbClient,
+      memGPTMod,
+    );
     let memGPTProviderUtils = new MemGPTProviderUtils();
     let memGPTGroupChatHandler = new MemGPTGroupChatHandler(
       openAIProtocolLLMProvider,
@@ -58,7 +62,6 @@ class Server {
       memGPTGroupChatHandler,
       memGPTProviderUtils,
     );
-    let memGPTMod = new MemGPTMod(memGPTDbClient);
     let system = new SystemService(new DockerSystem());
 
     // Routes

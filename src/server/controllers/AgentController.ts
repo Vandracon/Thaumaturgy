@@ -20,7 +20,11 @@ export class AgentController {
     memGPTProvider: IMemGPTProvider,
     dataRepository: IDataRepository,
   ) {
-    this.agentService = new AgentService(dataRepository, memGPTProvider);
+    this.agentService = new AgentService(
+      dataRepository,
+      memGPTProvider,
+      memGPTMod,
+    );
     this.memGPTModService = new MemGPTModService(memGPTMod);
   }
 
@@ -36,8 +40,9 @@ export class AgentController {
     id: string,
     human: string,
     persona: string,
+    model: string,
   ): Promise<void> {
-    return await this.agentService.updateAgentMemory(id, human, persona);
+    return await this.agentService.updateAgentMemory(id, human, persona, model);
   }
 
   async createAgent(data: CreateAgentRequest): Promise<void> {

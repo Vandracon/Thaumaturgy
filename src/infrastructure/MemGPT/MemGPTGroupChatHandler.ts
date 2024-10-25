@@ -111,7 +111,15 @@ export class MemGPTGroupChatHandler {
       );
 
       // Utilize actual LLM for the group convo.
-      let llmResponse = await this.llmProvider.sendToLLM(messages, maxTokens);
+      let llmResponse = await this.llmProvider.sendToLLM(
+        messages,
+        maxTokens,
+        originalRequest.model,
+        originalRequest.frequency_penalty,
+        originalRequest.stop,
+        originalRequest.temperature,
+        originalRequest.top_p,
+      );
 
       if (originalRequest.stream) {
         await OpenAIProtocolTransport.streamToClient(res, llmResponse);

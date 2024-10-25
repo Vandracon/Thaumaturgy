@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 interface LLMConfig {
   model_endpoint_type: string | null;
   model_endpoint: string | null;
+  model: string | null;
   model_wrapper: string | null;
   context_window: number | null;
 }
@@ -18,6 +19,7 @@ const MemGPTLLMConfig: React.FC = () => {
   const [config, setConfig] = useState<LLMConfig>({
     model_endpoint_type: "",
     model_endpoint: "",
+    model: "",
     model_wrapper: "",
     context_window: null,
   });
@@ -80,7 +82,7 @@ const MemGPTLLMConfig: React.FC = () => {
     <div className="config-container">
       <h1>Configure the LLM Settings</h1>
       <p>
-        Be sure to restart the MemGPT service for changes to take full effect.
+        Service will restart a couple times for changes to take full effect.
       </p>
 
       {isLoading ? (
@@ -90,8 +92,8 @@ const MemGPTLLMConfig: React.FC = () => {
           <div className="form-group">
             <label>Model Endpoint Type:</label>
             <span>
-              koboldcpp, llamacpp, lmstudio, lmstudio-legacy, ollama,
-              webui-legacy, webui, vllm
+              ollama (recommend), koboldcpp, llamacpp, lmstudio,
+              lmstudio-legacy, webui-legacy, webui, vllm
             </span>
             <input
               type="text"
@@ -106,6 +108,15 @@ const MemGPTLLMConfig: React.FC = () => {
               type="text"
               name="model_endpoint"
               value={config.model_endpoint || ""}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group">
+            <label>Model:</label>
+            <input
+              type="text"
+              name="model"
+              value={config.model || ""}
               onChange={handleChange}
             />
           </div>
