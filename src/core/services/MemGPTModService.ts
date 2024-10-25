@@ -15,7 +15,10 @@ export class MemGPTModService implements IMemGPTModService {
   }
 
   async updateAllAgentsLLMConfig(data: UpdateAllAgentLLMConfig): Promise<void> {
-    await this.memGPTMod.updateAllAgentLLMSettings(data.llm_config);
+    await this.memGPTMod.updateAllAgentLLMSettings(
+      data.llm_config,
+      data.update_agents,
+    );
   }
 
   getAllAgentsLLMConfig(): GetAllAgentsMemGPTLLMConfig {

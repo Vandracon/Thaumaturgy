@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./MemGPTLLMConfig.css";
 
 interface LLMConfig {
   model_endpoint_type: string | null;
@@ -26,6 +27,8 @@ const MemGPTLLMConfig: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [saveButtonEnabled, setSaveButtonEnabled] = useState<boolean>(true);
+  const [overwriteAgentModel, setOverwriteAgentModelEnabled] =
+    useState<boolean>(false);
 
   // Fetch the LLM config on component mount
   useEffect(() => {
@@ -66,7 +69,10 @@ const MemGPTLLMConfig: React.FC = () => {
       toast.info("Restarting MemGPT");
       await axios.post("/api/v1/system/memgpt/restart", {});
       toast.info("Saving config");
-      await axios.post("/api/v1/mod/agents/llmconfig", { llm_config: config });
+      await axios.post("/api/v1/mod/agents/llmconfig", {
+        llm_config: config,
+        update_agents: overwriteAgentModel,
+      });
       toast.info("Restarting MemGPT Again");
       await axios.post("/api/v1/system/memgpt/restart", {});
       toast.success("LLM config saved successfully!");
@@ -88,7 +94,7 @@ const MemGPTLLMConfig: React.FC = () => {
       {isLoading ? (
         <p>Loading...</p>
       ) : (
-        <div className="form-container">
+        <div className="MemGPTLLMConfig form-container">
           <div className="form-group">
             <label>Model Endpoint Type:</label>
             <span>
@@ -113,6 +119,17 @@ const MemGPTLLMConfig: React.FC = () => {
           </div>
           <div className="form-group">
             <label>Model:</label>
+            <div className="checkbox-container">
+              <label>Update Existing Agents:</label>
+              <input
+                type="checkbox"
+                name="model-overwrite-agents-confirm"
+                checked={overwriteAgentModel}
+                onChange={(e) => {
+                  setOverwriteAgentModelEnabled(e.target.checked);
+                }}
+              />
+            </div>
             <input
               type="text"
               name="model"
@@ -120,6 +137,7 @@ const MemGPTLLMConfig: React.FC = () => {
               onChange={handleChange}
             />
           </div>
+
           <div className="form-group">
             <label>Model Wrapper:</label>
             <input

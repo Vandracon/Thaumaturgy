@@ -5,7 +5,10 @@ import { Utility } from "../../Core/Utils/Utility";
 
 export interface IMemGPTMod {
   updateAgentLLMSettings(agentId: string, config: LLMConfig): Promise<void>;
-  updateAllAgentLLMSettings(config: LLMConfig): Promise<void>;
+  updateAllAgentLLMSettings(
+    config: LLMConfig,
+    update_agents: boolean,
+  ): Promise<void>;
   updateAgentBaseSystemPrompt(
     agentId: string,
     newPrompt: string,
@@ -59,13 +62,18 @@ export class MemGPTMod implements IMemGPTMod {
     }
   }
 
-  async updateAllAgentLLMSettings(config: LLMConfig): Promise<void> {
-    if (config.model) {
-      let sql = `UPDATE agents SET llm_config = json_set(llm_config, '$.model', ?)`;
-      await this.dbClient.insertData(sql, [config.model]);
-    } else {
-      let sql = `UPDATE agents SET llm_config = json_set(llm_config, '$.model', NULL)`;
-      await this.dbClient.insertData(sql, []);
+  async updateAllAgentLLMSettings(
+    config: LLMConfig,
+    update_agents: boolean,
+  ): Promise<void> {
+    if (update_agents) {
+      if (config.model) {
+        let sql = `UPDATE agents SET llm_config = json_set(llm_config, '$.model', ?)`;
+        await this.dbClient.insertData(sql, [config.model]);
+      } else {
+        let sql = `UPDATE agents SET llm_config = json_set(llm_config, '$.model', NULL)`;
+        await this.dbClient.insertData(sql, []);
+      }
     }
 
     if (config.model_endpoint_type) {

@@ -1,0 +1,21 @@
+.MemGPTLLMConfig .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px; /* Optional spacing between form groups */
+}
+
+.MemGPTLLMConfig .checkbox-container {
+  display: flex;
+  flex-direction: row; /* Ensures label and checkbox are side by side */
+  align-items: center;
+}
+
+.MemGPTLLMConfig .checkbox-container label {
+  margin-right: 8px;
+  color: rgb(255, 51, 0);
+}
+
+.MemGPTLLMConfig .form-group label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
