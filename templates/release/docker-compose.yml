@@ -49,7 +49,7 @@ services:
       - MEMGPT_SQLITE_DATABASE_PATH=/app/local/sqlite.db
       - MEMGPT_CONFIG_PATH=/app/local/config
       - MEMGPT_BASE_URL=http://MEMGPT:8083
-      - LLM_ENDPOINT=http://host.docker.internal:5001/v1/chat/completions
+      - LLM_ENDPOINT=http://host.docker.internal:11434/v1/chat/completions
       - CHARACTERS_CSV_PATH=local/data/skyrim_characters.csv
     ports:
       - "8050:8050"
