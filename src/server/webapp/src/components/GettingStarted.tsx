@@ -82,8 +82,19 @@ const GettingStarted: React.FC<GettingStartedProps> = () => {
       <hr />
       <br />
       <span className="getting-started-description">
-        Step Four: Refer to <a href="/docs">Documentation</a> for more
-        information.
+        Step Four:
+        <br />
+        <br />
+        The model name in Mantella config should match a model you have within
+        Ollama. If using something like LM Studio or Kobold then it dosen't
+        matter and instead uses the one you loaded in manually.
+        <br />
+        <br />
+      </span>
+      <hr />
+      <br />
+      <span className="getting-started-description">
+        Refer to <a href="/docs">Documentation</a> for more information.
         <br />
         <br />
       </span>
