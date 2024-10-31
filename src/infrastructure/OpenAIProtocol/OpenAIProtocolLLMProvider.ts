@@ -121,7 +121,11 @@ export class OpenAIProtocolLLMProvider implements IOpenAIProtocolLLMProvider {
       const response = await axios.post(config.LLM.ENDPOINT, data, {
         headers: headers,
       });
-      console.log("LLM Response (sendToLLM): ", response.data);
+      console.log(
+        "LLM Response (sendToLLM): ",
+        response.data,
+        response.data.choices,
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching response from LLM (sendToLLM):", error);
