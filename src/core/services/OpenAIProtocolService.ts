@@ -12,8 +12,12 @@ import { IThaumicRequest, ThaumicIntent } from "../Data/ThaumicRequest";
 import { Utility } from "../Utils/Utility";
 import * as config from "config";
 import { IDataImportFileProcessor } from "../Interfaces/Importer/IDataImportFileProcessor";
+import { Filter } from "../Entities/Filter";
+import { GetFilteringResponse } from "../Data/OpenAIProtocol/GetFilteringResponse";
 
 export class OpenAIProtocolService implements IOpenAIProtocolService {
+  private filters: Array<Filter> = [];
+  public static FiltersDirty: boolean = true;
   constructor(
     private openAIProtocolLLMProvider: IOpenAIProtocolLLMProvider,
     private memGPTProvider: IMemGPTProvider,
@@ -46,6 +50,12 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
       stream: false,
     };
 
+    // Ensure latest filters are loaded
+    if (OpenAIProtocolService.FiltersDirty) {
+      this.filters = (await this.dataRepository.getFiltering()).filters;
+      OpenAIProtocolService.FiltersDirty = false;
+    }
+
     for (let msg of req.body.messages) {
       if (msg.role == "system") {
         let sys = await this.processSystemMessage(msg.content);
@@ -63,7 +73,18 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
       } else if (msg.role == "user") {
         let usrMsg = await this.processUserMessage(msg.content);
         msg.content = (dynamicData.length ? dynamicData + " " : "") + usrMsg;
-        userMessageBody.message = msg.content;
+
+        if (this.filters.length) {
+          console.log(
+            `Applying filter to user message. BEFORE: ${msg.content}`,
+          );
+          userMessageBody.message = this.applyFilterToMessage(msg.content);
+          console.log(
+            `Applying filter to user message. AFTER: ${userMessageBody.message}`,
+          );
+        } else {
+          userMessageBody.message = msg.content;
+        }
       }
     }
 
@@ -317,5 +338,42 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
         fallback_prompt: msg,
       };
     }
+  }
+
+  async setFiltering(data: Array<Filter>): Promise<void> {
+    OpenAIProtocolService.FiltersDirty = true;
+    return this.dataRepository.setFiltering(data);
+  }
+
+  async getFiltering(): Promise<GetFilteringResponse> {
+    return this.dataRepository.getFiltering();
+  }
+
+  applyFilterToMessage(msgContent: string) {
+    let filteredMessage = msgContent;
+
+    this.filters.forEach((filter) => {
+      try {
+        // Check if 'find' is a valid regex pattern or just a string
+        let regex: RegExp;
+        if (filter.find.startsWith("/") && filter.find.endsWith("/")) {
+          // Treat it as a regex pattern if it starts and ends with slashes (optional check)
+          regex = new RegExp(filter.find.slice(1, -1), "g"); // Remove slashes and apply 'g' flag
+        } else {
+          // Treat it as a plain string (escape special characters)
+          regex = new RegExp(this.escapeRegExp(filter.find), "g");
+        }
+
+        filteredMessage = filteredMessage.replace(regex, filter.replace);
+      } catch (error) {
+        console.error("Error applying filter:", error, filter.find);
+      }
+    });
+
+    return filteredMessage;
+  }
+
+  escapeRegExp(string: string) {
+    return string.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, "\\$&"); // Escape special characters
   }
 }

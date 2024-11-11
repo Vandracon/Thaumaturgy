@@ -67,6 +67,12 @@ nav ul li {
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
+.sidebar .advanced-label {
+  color: white;
+  margin-bottom: 0.5em;
+  text-align: center;
+}
+
 .sidebar ul {
   list-style: none;
   padding: 0;

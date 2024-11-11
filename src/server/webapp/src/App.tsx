@@ -15,6 +15,7 @@ import AgentChat from "./components/AgentChat";
 import ImportCharacters from "./components/ImportCharacters";
 import GettingStarted from "./components/GettingStarted";
 import Documentation from "./components/Documentation";
+import Filtering from "./components/Filtering";
 
 const App: React.FC = () => {
   return (
@@ -62,6 +63,13 @@ const App: React.FC = () => {
                   LLM Config
                 </Link>
               </li>
+              <hr />
+              <div className="advanced-label">Advanced</div>
+              <li>
+                <Link to="/filtering" className="nav-link">
+                  Filtering
+                </Link>
+              </li>
             </ul>
           </nav>
           <main>
@@ -72,6 +80,7 @@ const App: React.FC = () => {
               <Route path="/llm-config" element={<MemGPTLLMConfig />} />
               <Route path="/agents" element={<MemGPTAgents />} />
               <Route path="/import-memory" element={<MemGPTImportMemory />} />
+              <Route path="/filtering" element={<Filtering />} />
               <Route path="/import-characters" element={<ImportCharacters />} />
               <Route path="/" element={<Navigate to="/getting-started" />} />
               <Route path="/chat/:agentId" element={<AgentChat />} />

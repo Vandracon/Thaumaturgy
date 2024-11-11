@@ -110,6 +110,9 @@ const MemGPTLLMConfig: React.FC = () => {
           </div>
           <div className="form-group">
             <label>Model Endpoint:</label>
+            If you decide to change this, save these settings and then stop this
+            service and update the LLM_ENDPOINT variable in the
+            docker-compose.yml file as well.
             <input
               type="text"
               name="model_endpoint"

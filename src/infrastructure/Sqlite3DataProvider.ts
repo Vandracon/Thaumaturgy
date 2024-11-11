@@ -31,7 +31,7 @@ export class Sqlite3DataProvider implements IDatabaseClient {
     }
   }
 
-  createTable(sql: string): Promise<void> {
+  runSql(sql: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.db.run(sql, (err) => {
         if (err) {
@@ -60,7 +60,8 @@ export class Sqlite3DataProvider implements IDatabaseClient {
         if (err) {
           reject(err);
         }
-        console.log(`Query complete. lastId ${this.lastID}`);
+        if (this.lastID) console.log(`Query complete. lastId ${this.lastID}`);
+        else console.log(`Query complete.`);
         resolve();
       });
     });
@@ -73,7 +74,8 @@ export class Sqlite3DataProvider implements IDatabaseClient {
         if (err) {
           reject(err);
         }
-        console.log(`Query complete. lastId ${this.lastID}`);
+        if (this.lastID) console.log(`Query complete. lastId ${this.lastID}`);
+        else console.log(`Query complete.`);
         resolve();
       });
     });
@@ -100,12 +102,16 @@ export class Sqlite3DataProvider implements IDatabaseClient {
   }
 
   private async runMigrations() {
-    await this.createTable(
+    await this.runSql(
       "CREATE TABLE IF NOT EXISTS agents(id TEXT PRIMARY KEY, name TEXT, initial_persona_header TEXT, initial_persona TEXT)",
     );
 
-    await this.createTable(
+    await this.runSql(
       "CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT, message_id INTEGER, json TEXT)",
+    );
+
+    await this.runSql(
+      "CREATE TABLE IF NOT EXISTS filters(find TEXT, replace TEXT)",
     );
 
     console.log("Main DB Migrations Complete");

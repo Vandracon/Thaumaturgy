@@ -1,5 +1,7 @@
 import { GetAgentsResponse } from "../Core/Data/Agents/GetAgentsResponse";
+import { GetFilteringResponse } from "../Core/Data/OpenAIProtocol/GetFilteringResponse";
 import { ThaumaturgyAgent } from "../Core/Entities/Agent";
+import { Filter } from "../Core/Entities/Filter";
 import { IDatabaseClient } from "../Core/Interfaces/IDatabaseClient";
 import { IDataRepository } from "../Core/Interfaces/IDataRepository";
 import { IMemGPTMod } from "./MemGPT/MemGPTMod";
@@ -130,5 +132,42 @@ export class DataRepository implements IDataRepository {
     const sql = `INSERT INTO messages (message_id, json) VALUES ${placeholders}`;
 
     await this.dbClient.insertData(sql, values);
+  }
+
+  async getFiltering(): Promise<GetFilteringResponse> {
+    let filters = await this.dbClient.selectData(
+      `SELECT find, replace FROM filters`,
+      [],
+    );
+
+    let results: GetFilteringResponse = { filters: [] };
+    for (let entry of filters) {
+      results.filters.push(new Filter(entry.find, entry.replace));
+    }
+
+    return results;
+  }
+
+  async setFiltering(data: Array<Filter>): Promise<void> {
+    let insert: any = [];
+    for (let filter of data) {
+      insert.push({
+        find: filter.find,
+        replace: filter.replace,
+      });
+    }
+
+    const placeholders = insert.map(() => "(?, ?)").join(", ");
+    const values = insert.reduce(
+      (acc: any, cur: any) => [...acc, cur.find, cur.replace],
+      [],
+    );
+
+    await this.dbClient.runSql(`DELETE FROM filters`);
+
+    if (data.length > 0) {
+      const sql = `INSERT INTO filters (find, replace) VALUES ${placeholders}`;
+      await this.dbClient.insertData(sql, values);
+    }
   }
 }

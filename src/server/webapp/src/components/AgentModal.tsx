@@ -171,6 +171,8 @@ const AgentModal: React.FC<AgentModalProps> = ({
           </button>
         </div>
       </form>
+
+      <ToastContainer />
     </Modal>
   );
 };

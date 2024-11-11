@@ -1,5 +1,7 @@
 import { ThaumaturgyAgent } from "../../Core/Entities/Agent";
 import { GetAgentsResponse } from "../Data/Agents/GetAgentsResponse";
+import { GetFilteringResponse } from "../Data/OpenAIProtocol/GetFilteringResponse";
+import { Filter } from "../Entities/Filter";
 
 export interface IDataRepository {
   getAgentByName(name: string): Promise<Array<ThaumaturgyAgent>>;
@@ -15,4 +17,7 @@ export interface IDataRepository {
   saveCreatedAgentsToDatabase(agents: Array<ThaumaturgyAgent>): Promise<void>;
 
   storeMemGPTResponse(data: Array<any>): Promise<void>;
+
+  getFiltering(): Promise<GetFilteringResponse>;
+  setFiltering(data: Array<Filter>): Promise<void>;
 }
