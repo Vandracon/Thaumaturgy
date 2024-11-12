@@ -40,7 +40,7 @@ export class OpenAIProtocolTransport {
       //console.dir(item);
       //console.dir(item.choices[0].delta);
       res.write(`data: ${JSON.stringify(item)}\n\n`);
-      await delay(1);
+      // await delay(1); No need to delay (not using saves 0.5 sec avg depending on response amount)
     }
     console.log("Streaming done");
   }
