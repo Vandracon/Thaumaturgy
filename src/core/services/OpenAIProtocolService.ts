@@ -56,6 +56,11 @@ export class OpenAIProtocolService implements IOpenAIProtocolService {
       OpenAIProtocolService.FiltersDirty = false;
     }
 
+    // Ensure originalBody is filtered.
+    if (this.filters.length) {
+      originalBody = this.applyFilterToMessage(originalBody);
+    }
+
     for (let msg of req.body.messages) {
       if (msg.role == "system") {
         let sys = await this.processSystemMessage(msg.content);
