@@ -13,9 +13,4 @@ export interface IAgentService {
   ): Promise<void>;
   createAgent(data: CreateAgentRequest): Promise<void>;
   chatToAgent(agentId: string, data: ChatRequest): Promise<any>;
-  getChatHistory(
-    agentId: string,
-    start: number,
-    count: number,
-  ): Promise<ChatHistory>;
 }

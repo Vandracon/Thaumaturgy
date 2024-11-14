@@ -66,6 +66,12 @@
   transform: none;
 }
 
+.agent-bubble.tool {
+  background-color: #555555;
+  color: #ffffff;
+  border: 8px solid green;
+}
+
 .agent-bubble.internal-monologue:hover,
 .agent-bubble.internal-monologue:active {
   box-shadow: none;

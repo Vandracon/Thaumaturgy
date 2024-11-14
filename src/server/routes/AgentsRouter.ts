@@ -159,35 +159,5 @@ export class AgentsRouter extends BaseRouter {
         }
       },
     );
-
-    this.app.get(
-      this.buildEndpoint("agent/:id/messages"),
-      async (req: Request, res: Response) => {
-        try {
-          let results = this.validator.validateChatHistoryRequest(req);
-
-          if (!results.passed) {
-            res.status(HttpStatusCode.BadRequest).send({ data: results.data });
-            return;
-          }
-
-          let agentId = req.params.id;
-          let start = req.query.start;
-          let count = req.query.count;
-
-          console.log("flub", agentId, start, count);
-
-          let response = await this.controller.getChatHistory(
-            agentId,
-            Number(start),
-            Number(count),
-          );
-
-          res.json(response);
-        } catch (e: any) {
-          Utility.routerLevelExceptionHandler(e, res);
-        }
-      },
-    );
   }
 }

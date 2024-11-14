@@ -8,6 +8,8 @@ import { IMemGPTMod } from "../../Infrastructure/MemGPT/MemGPTMod";
 import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
 import { UpdateAgentSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAgentSystemPromptData";
 import { UpdateAllAgentsSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentsSystemPromptData";
+import { PagingRequest } from "../../Core/Data/PagingRequest";
+import { GetChatHistoryRequest } from "../../Core/Data/MemGPTMod/GetChatHistoryRequest";
 
 export class MemGPTModRouter extends BaseRouter {
   private controller: MemGPTModController;
@@ -142,6 +144,42 @@ export class MemGPTModRouter extends BaseRouter {
           res.json(data);
         } catch (e: any) {
           console.log("some things broke", e);
+          res
+            .status(HttpStatusCode.InternalServerError)
+            .json({ data: { error: e.message } });
+        }
+      },
+    );
+
+    this.app.get(
+      this.buildEndpoint("mod/agent/:agentId/chat/history"),
+      async (req: Request, res: Response) => {
+        try {
+          let query = req.query as unknown as PagingRequest;
+          let params = req.params as unknown as GetChatHistoryRequest;
+
+          let results = this.validator.validatePagingRequest(query);
+
+          if (!results.passed) {
+            res.status(HttpStatusCode.BadRequest).send({ data: results.data });
+            return;
+          }
+
+          results = this.validator.validateGetChatHistoryPagingRequest(params);
+
+          if (!results.passed) {
+            res.status(HttpStatusCode.BadRequest).send({ data: results.data });
+            return;
+          }
+
+          let data = await this.controller.getChatHistory(
+            req.params.agentId,
+            query.page,
+            query.pageSize,
+          );
+
+          res.json(data);
+        } catch (e: any) {
           res
             .status(HttpStatusCode.InternalServerError)
             .json({ data: { error: e.message } });

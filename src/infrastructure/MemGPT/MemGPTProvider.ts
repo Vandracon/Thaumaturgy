@@ -14,7 +14,6 @@ import { CoreMemoryResponse } from "../../Core/Data/MemGPT/CoreMemory";
 import { Bootstraper } from "../../Server/Bootstrapper";
 import { MemGPTProviderUtils } from "./MemGPTProviderUtils";
 import { MemGPTGroupChatHandler } from "./MemGPTGroupChatHandler";
-import { ChatHistory } from "../../Core/Data/Agents/ChatHistoryRequest";
 
 export class MemGPTProvider implements IMemGPTProvider {
   private responseTimes: number[];
@@ -425,24 +424,6 @@ export class MemGPTProvider implements IMemGPTProvider {
         role: "user",
         stream_steps: false,
       },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${config.MEMGPT.AUTH_TOKEN}`,
-        },
-      },
-    );
-
-    return response.data;
-  }
-
-  async getChatHistory(
-    agentId: string,
-    start: number,
-    count: number,
-  ): Promise<ChatHistory> {
-    let response = await axios.get(
-      `${config.MEMGPT.BASE_URL}${config.MEMGPT.ENDPOINTS.AGENTS}/${agentId}/messages?start=${start}&count=${count}`,
       {
         headers: {
           "Content-Type": "application/json",

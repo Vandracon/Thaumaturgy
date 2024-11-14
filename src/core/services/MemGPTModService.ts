@@ -4,6 +4,7 @@ import { GetAllAgentsMemGPTLLMConfig } from "../Data/MemGPT/Mod/GetAllAgentsMemG
 import { GetAllAgentsBaseSystemResponse } from "../Data/MemGPT/Mod/GetAllAgentsSystemPromptResponse";
 import { UpdateAgentLLMConfig } from "../Data/MemGPT/Mod/UpdateAgentLLMConfig";
 import { UpdateAllAgentLLMConfig } from "../Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
+import { GetAgentChatHistoryResponse } from "../Data/MemGPTMod/GetAgentChatHistoryResponse";
 import { IMemGPTModService } from "../Interfaces/IMemGPTModService";
 import { Utility } from "../Utils/Utility";
 
@@ -50,5 +51,13 @@ export class MemGPTModService implements IMemGPTModService {
 
   async getAgentDetails(id: string): Promise<GetAgentDetailsResponse | null> {
     return this.memGPTMod.getAgentDetails(id);
+  }
+
+  getAgentChatHistory(
+    agentId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<GetAgentChatHistoryResponse> {
+    return this.memGPTMod.getChatHistory(agentId, page, pageSize);
   }
 }

@@ -3,9 +3,19 @@ import { UpdateAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAgentLLMC
 import { UpdateAgentSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAgentSystemPromptData";
 import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
 import { UpdateAllAgentsSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentsSystemPromptData";
+import { GetChatHistoryRequest } from "../../Core/Data/MemGPTMod/GetChatHistoryRequest";
+import { PagingRequest } from "../../Core/Data/PagingRequest";
 import { BaseValidator } from "./BaseValidator";
+import { CommonValidator } from "./CommonValidator";
 
 export class MemGPTModValidator extends BaseValidator {
+  private commonValidator: CommonValidator;
+
+  constructor() {
+    super();
+    this.commonValidator = new CommonValidator();
+  }
+
   validateUpdateAgentLLMConfig(data: UpdateAgentLLMConfig) {
     let validationReasons: Array<string> = [];
 
@@ -105,5 +115,22 @@ export class MemGPTModValidator extends BaseValidator {
       validationReasons.push(`No fields provided to update`);
 
     return validationReasons;
+  }
+
+  validatePagingRequest(query: PagingRequest) {
+    return this.commonValidator.validatePagingRequest(query);
+  }
+
+  validateGetChatHistoryPagingRequest(params: GetChatHistoryRequest) {
+    let validationReasons: Array<string> = [];
+
+    if (!params.agentId) {
+      validationReasons.push(`agentId param missing or invalid`);
+    }
+
+    return this.returnResult(
+      validationReasons.length ? false : true,
+      validationReasons,
+    );
   }
 }

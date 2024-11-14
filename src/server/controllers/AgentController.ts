@@ -52,12 +52,4 @@ export class AgentController {
   async chatToAgent(agentId: string, data: ChatRequest): Promise<any> {
     return await this.agentService.chatToAgent(agentId, data);
   }
-
-  async getChatHistory(
-    agentId: string,
-    start: number,
-    count: number,
-  ): Promise<ChatHistory> {
-    return await this.agentService.getChatHistory(agentId, start, count);
-  }
 }

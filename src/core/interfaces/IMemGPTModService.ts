@@ -3,6 +3,7 @@ import { GetAllAgentsMemGPTLLMConfig } from "../Data/MemGPT/Mod/GetAllAgentsMemG
 import { GetAllAgentsBaseSystemResponse } from "../Data/MemGPT/Mod/GetAllAgentsSystemPromptResponse";
 import { UpdateAgentLLMConfig } from "../Data/MemGPT/Mod/UpdateAgentLLMConfig";
 import { UpdateAllAgentLLMConfig } from "../Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
+import { GetAgentChatHistoryResponse } from "../Data/MemGPTMod/GetAgentChatHistoryResponse";
 
 export interface IMemGPTModService {
   updateAgentLLMConfig(data: UpdateAgentLLMConfig): Promise<void>;
@@ -15,4 +16,9 @@ export interface IMemGPTModService {
   getAllAgentsBaseSystemPrompt(): GetAllAgentsBaseSystemResponse;
   getAllAgentsLLMConfig(): GetAllAgentsMemGPTLLMConfig;
   getAgentDetails(id: string): Promise<GetAgentDetailsResponse | null>;
+  getAgentChatHistory(
+    agentId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<GetAgentChatHistoryResponse>;
 }

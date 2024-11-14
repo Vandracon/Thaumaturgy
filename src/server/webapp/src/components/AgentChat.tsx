@@ -8,7 +8,7 @@ interface AgentChatProps {}
 
 interface ChatMessage {
   id: number;
-  sender: "user" | "agent";
+  sender: "user" | "agent" | "tool";
   text: string;
   type: "message" | "internal_monologue";
   fullData?: any;
@@ -28,76 +28,100 @@ const AgentChat: React.FC<AgentChatProps> = () => {
   ); // Modal state
   const chatContainerRef = useRef<HTMLDivElement | null>(null); // Reference to the chat container
 
+  const AGENT_NO_RESPONSE = "[System: Agent gave no response.]";
+
   useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+
+    // Initial message load
     setMessages([]);
     fetchMessages();
 
-    const chatContainer = chatContainerRef.current;
-
-    // Scroll event listener
+    // Scroll event listener to load more messages when reaching the top
     const handleScroll = () => {
-      return; // Disabled scroll paging
-      // if (chatContainer && chatContainer.scrollTop === 0) {
-      //   // User scrolled to the top, fetch more messages
-      //   setCurrentPage((prevPage) => prevPage + 1);
-      //   fetchMessages();
-      // }
+      if (chatContainer && chatContainer.scrollTop === 0) {
+        // User scrolled to the top, fetch more messages
+        setCurrentPage((prevPage) => prevPage + 1);
+        fetchMessages();
+      }
     };
 
-    // Add scroll event listener only if chatContainer is not null
-    // if (chatContainer) {
-    //   chatContainer.addEventListener("scroll", handleScroll);
-    // }
+    if (chatContainer) {
+      chatContainer.addEventListener("scroll", handleScroll);
+    }
 
-    // // Cleanup event listener on unmount
-    // return () => {
-    //   if (chatContainer) {
-    //     chatContainer.removeEventListener("scroll", handleScroll);
-    //   }
-    // };
+    // Cleanup event listener on unmount
+    return () => {
+      if (chatContainer) {
+        chatContainer.removeEventListener("scroll", handleScroll);
+      }
+    };
   }, []);
+
+  // Adjust scroll position after new messages are added
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+
+    if (chatContainer && chatContainer.dataset.previousScrollTop) {
+      const previousScrollTop = parseFloat(
+        chatContainer.dataset.previousScrollTop,
+      );
+      const previousScrollHeight = parseFloat(
+        chatContainer.dataset.previousScrollHeight as string,
+      );
+      const newScrollHeight = chatContainer.scrollHeight;
+
+      // Restore scroll position based on height difference
+      chatContainer.scrollTop =
+        previousScrollTop + (newScrollHeight - previousScrollHeight);
+    }
+  }, [messages]);
+
+  let page = 1;
+  let pageSize = 20;
+  let historyRequestPending = false;
+  let reachedEnd = false;
 
   const fetchMessages = async () => {
     try {
-      // Get all messages from local storage
-      const storedMessages = JSON.parse(
-        localStorage.getItem(getMessagesKey()) || "[]",
+      if (historyRequestPending == true || reachedEnd) return;
+      historyRequestPending = true;
+
+      // Capture current scroll height and top position before loading new messages
+      const previousScrollHeight =
+        chatContainerRef.current?.scrollHeight.toString();
+      const previousScrollTop = chatContainerRef.current?.scrollTop.toString();
+
+      //console.log(`Getting chat history page ${page}`);
+      const response = await axios.get(
+        `/api/v1/mod/agent/${agentId}/chat/history?page=${page}&pageSize=${pageSize}`,
+      );
+      reachedEnd = response.data.entries.length == 0;
+      if (reachedEnd) return;
+      response.data.entries.reverse();
+
+      let messages: Array<ChatMessage> = processChatHistory(
+        response.data.entries,
       );
 
-      // // Variables for pagination
-      // const pageSize = 20; // Desired number of messages per page
-      // const totalMessages = storedMessages.length;
+      //console.log(`chat history for page ${page}`, response.data.entries);
+      page++;
 
-      // // Calculate the total number of pages
-      // const totalPages = Math.ceil(totalMessages / pageSize);
+      setMessages((prevMessages) => [...messages, ...prevMessages]);
 
-      // // Clamp currentPage to avoid going out of bounds
-      // const clampedCurrentPage = Math.max(
-      //   0,
-      //   Math.min(currentPage, totalPages - 1),
-      // );
+      // Store scroll positions in ref so we can access them in the next useEffect
+      if (chatContainerRef.current) {
+        chatContainerRef.current.dataset.previousScrollTop = previousScrollTop;
+        chatContainerRef.current.dataset.previousScrollHeight =
+          previousScrollHeight;
+      }
 
-      // // Calculate start and end indices for slicing
-      // const endIndex = Math.max(
-      //   totalMessages - clampedCurrentPage * pageSize,
-      //   0,
-      // );
-      // const startIndex = Math.max(endIndex - pageSize, 0);
-
-      // console.log("Total Messages:", totalMessages);
-      // console.log("Current Page:", clampedCurrentPage);
-      // console.log("Start Index:", startIndex);
-      // console.log("End Index:", endIndex);
-
-      // // Get a subset of the messages for the current page
-      // const messagesSubset = storedMessages.slice(startIndex, endIndex);
-
-      setMessages((prevMessages) => [...prevMessages, ...storedMessages]);
-
-      scrollToBottom();
+      if (page == 2) scrollToBottom(); // Initial request
     } catch (error) {
       console.error("Error fetching chat:", error);
       toast.error("Failed to fetch chat.");
+    } finally {
+      historyRequestPending = false;
     }
   };
 
@@ -116,7 +140,6 @@ const AgentChat: React.FC<AgentChatProps> = () => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     scrollToBottom();
     setUserMessage(""); // Clear the input field
-    saveMessageToLocalStorage(newMessage);
 
     // Make an API call to send the message to the agent
     try {
@@ -126,7 +149,7 @@ const AgentChat: React.FC<AgentChatProps> = () => {
         message: userMessage,
       });
 
-      parseMessages(response.data.messages, true, true);
+      parseLiveMessages(response.data.messages, true);
     } catch (error) {
       console.error("Error sending message", error);
     } finally {
@@ -137,7 +160,6 @@ const AgentChat: React.FC<AgentChatProps> = () => {
 
   const scrollToBottom = () => {
     setTimeout(() => {
-      console.log(chatContainerRef);
       if (chatContainerRef.current) {
         chatContainerRef.current.scrollTop =
           chatContainerRef.current.scrollHeight;
@@ -150,67 +172,181 @@ const AgentChat: React.FC<AgentChatProps> = () => {
     return key;
   };
 
-  // Save the user's message to local storage
-  const saveMessageToLocalStorage = (message: ChatMessage) => {
-    const storedMessages = localStorage.getItem(getMessagesKey());
-    const parsedMessages: ChatMessage[] = storedMessages
-      ? JSON.parse(storedMessages)
-      : [];
-    parsedMessages.push(message);
-    localStorage.setItem(getMessagesKey(), JSON.stringify(parsedMessages));
+  let messageIdIndex = 0;
+  const generateMessageId = () => {
+    messageIdIndex++;
+    return messageIdIndex;
   };
 
-  const parseMessages = (
+  // General helper to add a message to the current state
+  const addMessage = (newMessage: ChatMessage) => {
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+  };
+
+  // Process each message in live chat
+  const parseLiveMessages = (
     messages: Array<any>,
-    saveToLocalStorage: boolean = false,
     checkForSendMessageReply: boolean = false,
   ) => {
     let foundSendMessage = false;
-    // Loop through the messages to find "send_message"
+
     for (let msg of messages) {
-      const parsedMsg = msg;
-
-      // Check if the message contains "send_message"
-      if (
-        parsedMsg.function_call &&
-        parsedMsg.function_call.name === "send_message"
-      ) {
+      // Handle "send_message" function calls
+      if (msg.function_call?.name === "send_message") {
         const agentMessage: ChatMessage = {
-          id: Date.now() + 1,
+          id: generateMessageId(),
           sender: "agent",
-          text: JSON.parse(parsedMsg.function_call.arguments).message, // Extract the actual message
+          text: JSON.parse(msg.function_call.arguments).message,
           type: "message",
-          fullData: messages, // Store the full message data for modal
+          fullData: messages,
         };
-        if (saveToLocalStorage) saveMessageToLocalStorage(agentMessage);
-        setMessages((prevMessages) => [...prevMessages, agentMessage]);
+        addMessage(agentMessage);
         foundSendMessage = true;
-      }
-
-      if (parsedMsg.internal_monologue) {
-        const agentMonologue: ChatMessage = {
-          id: Date.now() + 1,
-          sender: "agent",
-          text: parsedMsg.internal_monologue,
-          type: "internal_monologue",
+      } else if (msg.function_call) {
+        const toolCall: ChatMessage = {
+          id: generateMessageId(),
+          sender: "tool",
+          text: msg.function_call?.name + ": " + msg.function_call.arguments,
+          type: "message",
+          fullData: messages,
         };
-        if (saveToLocalStorage) saveMessageToLocalStorage(agentMonologue);
-        setMessages((prevMessages) => [...prevMessages, agentMonologue]);
+        addMessage(toolCall);
+      } else if (msg.function_return && msg.function_return != "None") {
+        const toolReturn: ChatMessage = {
+          id: generateMessageId(),
+          sender: "tool",
+          text: msg.function_return,
+          type: "message",
+          fullData: messages,
+        };
+        addMessage(toolReturn);
+      }
+
+      // Handle internal monologue
+      if (msg.internal_monologue) {
+        const agentMonologue: ChatMessage = {
+          id: generateMessageId(),
+          sender: "agent",
+          text: msg.internal_monologue,
+          type: "internal_monologue",
+          fullData: msg,
+        };
+        addMessage(agentMonologue);
       }
     }
 
-    // If no "send_message" is found, show "No Response"
+    // Add "No Response" message if no "send_message" is found
     if (!foundSendMessage && checkForSendMessageReply) {
-      const agentMessage: ChatMessage = {
-        id: Date.now() + 1,
+      addMessage({
+        id: generateMessageId(),
         sender: "agent",
-        text: "[System: Agent gave no response.]",
+        text: AGENT_NO_RESPONSE,
         type: "message",
-        fullData: messages, // Store the full message data for modal
-      };
-      if (saveToLocalStorage) saveMessageToLocalStorage(agentMessage);
-      setMessages((prevMessages) => [...prevMessages, agentMessage]);
+        fullData: messages,
+      });
     }
+  };
+
+  // Helper to process agent messages
+  const processAgentMessage = (msg: any): ChatMessage[] => {
+    const messages: ChatMessage[] = [];
+    let reply = "";
+    let msgType: "agent" | "tool" = "agent";
+
+    // Add internal monologue message
+    messages.push({
+      id: generateMessageId(),
+      sender: "agent",
+      text: msg.text,
+      type: "internal_monologue",
+      fullData: msg,
+    });
+
+    try {
+      const toolCalls = JSON.parse(msg.tool_calls);
+      for (let call of toolCalls) {
+        if (call.tool_call_type === "function") {
+          if (call.function.name === "send_message") {
+            reply += JSON.parse(call.function.arguments).message;
+          } else {
+            reply += `${call.function.name}: ${call.function.arguments}`;
+            msgType = "tool";
+          }
+        }
+      }
+
+      messages.push({
+        id: generateMessageId(),
+        sender: msgType,
+        text: reply,
+        type: "message",
+        fullData: msg,
+      });
+    } catch (error) {
+      console.error("Error parsing tool_calls data in agent message", error);
+    }
+
+    return messages;
+  };
+
+  // Helper to process tool messages
+  const processToolMessage = (msg: any): ChatMessage | null => {
+    if (msg.text && msg.text.length && msg.name !== "send_message") {
+      return {
+        id: generateMessageId(),
+        sender: "tool",
+        text: msg.text,
+        type: "message",
+        fullData: msg,
+      };
+    }
+    return null;
+  };
+
+  // Helper to process user messages
+  const processUserMessage = (msg: any): ChatMessage | null => {
+    try {
+      const data = JSON.parse(msg.text);
+      if (data?.type === "user_message") {
+        return {
+          id: generateMessageId(),
+          sender: "user",
+          text: data.message,
+          type: "message",
+          fullData: msg,
+        };
+      }
+    } catch (error) {
+      console.error("Error parsing user message text", error);
+    }
+    return null;
+  };
+
+  // Main function to process chat history
+  const processChatHistory = (entries: any[]): Array<ChatMessage> => {
+    const messages: ChatMessage[] = [];
+
+    for (const msg of entries) {
+      switch (msg.role) {
+        case "assistant":
+          messages.push(...processAgentMessage(msg));
+          break;
+        case "tool": {
+          const toolMsg = processToolMessage(msg);
+          if (toolMsg) messages.push(toolMsg);
+          break;
+        }
+        case "user": {
+          const userMsg = processUserMessage(msg);
+          if (userMsg) messages.push(userMsg);
+          break;
+        }
+        default:
+          console.warn("Unknown message role:", msg.role);
+      }
+    }
+
+    return messages;
   };
 
   // Function to handle message click and show modal
@@ -232,10 +368,18 @@ const AgentChat: React.FC<AgentChatProps> = () => {
         {messages.map((msg, index) => (
           <div
             key={`${msg.sender}-${msg.id}-${index}`} // Unique key combining sender, id, and index
-            className={`chat-bubble ${msg.sender === "user" ? "user-bubble" : msg.type == "internal_monologue" ? "agent-bubble internal-monologue" : "agent-bubble"}`}
+            className={`chat-bubble ${
+              msg.sender === "user"
+                ? "user-bubble"
+                : msg.sender === "tool"
+                  ? "agent-bubble tool"
+                  : msg.type === "internal_monologue"
+                    ? "agent-bubble internal-monologue"
+                    : "agent-bubble"
+            }`}
             onClick={() => handleMessageClick(msg)} // Add click event to show modal
           >
-            {msg.type == "internal_monologue" ? '"' + msg.text + '"' : msg.text}
+            {msg.type === "internal_monologue" ? `"${msg.text}"` : msg.text}
           </div>
         ))}
 

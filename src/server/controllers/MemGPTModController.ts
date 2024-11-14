@@ -4,6 +4,7 @@ import { UpdateAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAgentLLMC
 import { UpdateAgentSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAgentSystemPromptData";
 import { UpdateAllAgentLLMConfig } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentLLMConfig";
 import { UpdateAllAgentsSystemPromptData } from "../../Core/Data/MemGPT/Mod/UpdateAllAgentsSystemPromptData";
+import { GetAgentChatHistoryResponse } from "../../Core/Data/MemGPTMod/GetAgentChatHistoryResponse";
 import { IMemGPTModService } from "../../Core/Interfaces/IMemGPTModService";
 import { MemGPTModService } from "../../Core/Services/MemGPTModService";
 import { IMemGPTMod } from "../../Infrastructure/MemGPT/MemGPTMod";
@@ -40,5 +41,13 @@ export class MemGPTModController {
 
   getAllAgentsBaseSystemPrompt(): GetAllAgentsBaseSystemResponse {
     return this.service.getAllAgentsBaseSystemPrompt();
+  }
+
+  async getChatHistory(
+    agentId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<GetAgentChatHistoryResponse> {
+    return await this.service.getAgentChatHistory(agentId, page, pageSize);
   }
 }

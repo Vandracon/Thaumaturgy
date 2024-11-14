@@ -60,10 +60,4 @@ export interface IMemGPTProvider {
   addToArchivalMemory(agentId: string, content: string): Promise<void>;
 
   sendNonStreamingMessage(agentId: string, message: string): Promise<any>;
-
-  getChatHistory(
-    agentId: string,
-    start: number,
-    count: number,
-  ): Promise<ChatHistory>;
 }

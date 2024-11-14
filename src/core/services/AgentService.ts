@@ -9,7 +9,6 @@ import { IMemGPTProvider } from "../Interfaces/IMemGPTProvider";
 import { Utility } from "../Utils/Utility";
 import config from "config";
 import { ChatRequest } from "../Data/Agents/ChatRequest";
-import { ChatHistory } from "../Data/Agents/ChatHistoryRequest";
 import { IMemGPTMod } from "../../Infrastructure/MemGPT/MemGPTMod";
 
 export class AgentService implements IAgentService {
@@ -91,13 +90,5 @@ export class AgentService implements IAgentService {
     await this.dataRepository.saveCreatedAgentsToDatabase(thaumAgents);
 
     return createAgentResponses[0];
-  }
-
-  getChatHistory(
-    agentId: string,
-    start: number,
-    count: number,
-  ): Promise<ChatHistory> {
-    return this.memGPTProvider.getChatHistory(agentId, start, count);
   }
 }

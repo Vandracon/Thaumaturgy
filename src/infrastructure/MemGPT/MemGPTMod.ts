@@ -1,5 +1,6 @@
 import { GetAgentDetailsResponse } from "../../Core/Data/MemGPT/GetAgentDetailsResponse";
 import { LLMConfig } from "../../Core/Data/MemGPT/Mod/LLMConfig";
+import { GetAgentChatHistoryResponse } from "../../Core/Data/MemGPTMod/GetAgentChatHistoryResponse";
 import { IDatabaseClient } from "../../Core/Interfaces/IDatabaseClient";
 import { Utility } from "../../Core/Utils/Utility";
 
@@ -15,6 +16,11 @@ export interface IMemGPTMod {
   ): Promise<void>;
   updateAllAgentsBaseSystemPrompt(newPrompt: string): Promise<void>;
   getAgentDetails(id: string): Promise<GetAgentDetailsResponse | null>;
+  getChatHistory(
+    agentId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<GetAgentChatHistoryResponse>;
 }
 
 /*
@@ -125,5 +131,30 @@ export class MemGPTMod implements IMemGPTMod {
       return data[0];
     }
     return null;
+  }
+
+  async getChatHistory(
+    agentId: string,
+    page: number,
+    pageSize: number,
+  ): Promise<GetAgentChatHistoryResponse> {
+    let entries = await this.dbClient.selectData(
+      `SELECT role, text, model, name, tool_calls, created_at FROM memgpt_recall_memory_agent WHERE agent_id = ? AND role != "system" ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [agentId, pageSize, (page - 1) * pageSize],
+    );
+
+    let totalCount = 0;
+    const result = await this.dbClient.selectData(
+      `SELECT COUNT(*) as totalCount FROM memgpt_recall_memory_agent WHERE agent_id = ? AND role != "system"`,
+      [agentId],
+    );
+    if (result && result.length > 0) {
+      totalCount = result[0].totalCount;
+    }
+
+    return {
+      entries,
+      totalCount,
+    };
   }
 }
